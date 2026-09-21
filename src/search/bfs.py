@@ -28,6 +28,4 @@ class BFS:
                 queue.append((next_state,new_action))
             
         return None 
-        
-def abc():
-    pass
+
