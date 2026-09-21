@@ -29,3 +29,5 @@ class BFS:
             
         return None 
         
+def abc():
+    pass
