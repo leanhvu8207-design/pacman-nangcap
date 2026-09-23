@@ -1,8 +1,6 @@
 import heapq
-from .pm_search_problem import PMSearchProblem
-
 class UCS:
-    def __init__(self,problem: PMSearchProblem):
+    def __init__(self,problem):
         self.problem = problem
         
     def search(self):
@@ -33,4 +31,5 @@ class UCS:
                     queue,
                     (new_cost,next_state,new_actions)
                 )
-                
+        return None
+    

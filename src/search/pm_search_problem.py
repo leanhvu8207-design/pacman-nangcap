@@ -40,4 +40,9 @@ class PMSearchProblem:
     
     def measure_path_cost(self,actions): # Tính chi phí dùng cho USC và A*
         return len(actions)
+    
+    def heuristic(self,state):
+        row, col = state
+        target_row, target_col = self.target
+        return abs(row-target_row) + abs(col-target_col)  # Khoảng cách ước tính (ko phải thực tế) -> hg tiên theo hg đó
 

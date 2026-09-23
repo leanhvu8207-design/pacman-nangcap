@@ -1,8 +1,6 @@
-from .pm_search_problem import PMSearchProblem
-
 
 class DFS:
-    def __init__(self, problem: PMSearchProblem):
+    def __init__(self, problem):
         self.problem = problem
 
     def search(self):

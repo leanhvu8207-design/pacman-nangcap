@@ -1,8 +1,6 @@
 from collections import deque
-from .pm_search_problem import PMSearchProblem
-
 class BFS:
-    def __init__(self,problem: PMSearchProblem):
+    def __init__(self,problem):
         self.problem = problem
         
     def search(self):
