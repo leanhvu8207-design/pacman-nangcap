@@ -1,11 +1,11 @@
 from src.search.pm_search_problem import PMSearchProblem
 from src.search.dfs import DFS
-from src.map_loader import load_map
+from src.utils.map_loader import load_map
 from src.search.bfs import BFS
 from src.search.ucs import UCS
 from src.search.a_star import AStar
 
-game_map = load_map("maps/test_map.txt")
+game_map = load_map("maps/test_map.tx")
 
 for row in game_map:
     print(row)
