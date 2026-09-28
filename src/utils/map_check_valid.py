@@ -17,7 +17,7 @@ def check_map(game_map):
     """
     Check ký tự hợp lệ trong map
     """
-    allowed_char = "#.PG "
+    allowed_char = "@#.PG "
     for line in game_map:  
         for char in line:
             if char not in allowed_char:
