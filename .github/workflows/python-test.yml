@@ -2,6 +2,7 @@ name: Python Code Check
 
 # Chỉ chạy kiểm tra khi có lệnh Push hoặc Pull Request vào branch main
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
   pull_request:
