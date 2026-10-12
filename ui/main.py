@@ -97,7 +97,8 @@ class PacmanVintageUI:
             classic_algos,
             initial_val="A*",
             on_change=self.on_algorithm_changed,
-            font_key="subtitle"
+            font_key="subtitle",
+            allow_none=True
         )
 
         # Hàng 2: Thuật toán đối kháng 2 nút
@@ -113,8 +114,12 @@ class PacmanVintageUI:
             adv_algos,
             initial_val=None,
             on_change=self.on_algorithm_changed,
-            font_key="subtitle"
+            font_key="subtitle",
+            allow_none=True
         )
+
+        # Đồng bộ đảm bảo chỉ duy nhất thuật toán A* sáng, Minimax/Alpha-Beta tắt hoàn toàn
+        self.on_algorithm_changed(self.controller.algorithm)
 
         # 3. Contextual Controls (Depth & Adversarial Mode)
         self.depth_stepper = NumberStepper(

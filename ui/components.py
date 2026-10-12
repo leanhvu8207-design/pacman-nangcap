@@ -100,10 +100,13 @@ class Button:
 class ButtonGroup:
     """Nhóm các nút bấm (như chọn thuật toán hoặc chế độ) có thể chọn 1 mục"""
 
-    def __init__(self, rects, labels, values, initial_val=None, on_change=None, font_key="subtitle"):
+    def __init__(self, rects, labels, values, initial_val=None, on_change=None, font_key="subtitle", allow_none=False):
         self.buttons = []
         self.values = values
-        self.selected_value = initial_val if initial_val is not None else values[0]
+        if allow_none:
+            self.selected_value = initial_val
+        else:
+            self.selected_value = initial_val if initial_val is not None else values[0]
         self.on_change = on_change
 
         for i, (r, lbl, val) in enumerate(zip(rects, labels, values)):
@@ -117,20 +120,19 @@ class ButtonGroup:
             btn.is_active = (val == self.selected_value)
 
     def set_value(self, val):
-        if val in self.values:
+        if val in self.values or val is None:
             self.selected_value = val
             self._update_states()
-            if self.on_change:
+            if self.on_change and val is not None:
                 self.on_change(val)
 
     def handle_event(self, event):
         for btn, val in self.buttons:
             if btn.handle_event(event):
-                if self.selected_value != val:
-                    self.selected_value = val
-                    self._update_states()
-                    if self.on_change:
-                        self.on_change(val)
+                self.selected_value = val
+                self._update_states()
+                if self.on_change:
+                    self.on_change(val)
                 return True
         return False
 
