@@ -469,11 +469,11 @@ class GameController:
             self.status = "ERROR"
             return
 
-        # Xác định mục tiêu ban đầu
-        if len(self.remaining_goals) > 0:
-            target = min(self.remaining_goals, key=lambda g: abs(self.spawn[0] - g[0]) + abs(self.spawn[1] - g[1]))
-        elif len(self.remaining_foods) > 0:
+        # Xác định mục tiêu ban đầu: ưu tiên ăn hết Food trước, sau đó mới tới Goal cuối cùng
+        if len(self.remaining_foods) > 0:
             target = self._find_nearest_food(self.spawn, self.remaining_foods)
+        elif len(self.remaining_goals) > 0:
+            target = self._find_nearest_food(self.spawn, self.remaining_goals)
         else:
             target = None
 
@@ -531,11 +531,11 @@ class GameController:
                     break
                 time.sleep(0.04)
 
-            # Cập nhật mục tiêu hiện tại: ưu tiên Goals, nếu không có Goal thì chọn Food gần nhất
-            if len(self.remaining_goals) > 0:
-                target = min(self.remaining_goals, key=lambda g: abs(state.pacman_position[0] - g[0]) + abs(state.pacman_position[1] - g[1]))
-            elif len(state.food) > 0:
+            # Cập nhật mục tiêu hiện tại: ưu tiên ăn hết Food trước, sau đó mới tới Goal cuối cùng
+            if len(state.food) > 0:
                 target = self._find_nearest_food(state.pacman_position, state.food)
+            elif len(self.remaining_goals) > 0:
+                target = self._find_nearest_food(state.pacman_position, self.remaining_goals)
             else:
                 target = None
 
@@ -567,7 +567,9 @@ class GameController:
             self.lich_su_actions.append(act)
 
             # Cập nhật state game
-            state = state.step(act, target)
+            prev_food_count = len(self.remaining_foods)
+            is_final = (len(state.food) == 0 and len(self.remaining_goals) <= 1)
+            state = state.step(act, target, is_final_goal=is_final)
             if state is None:
                 self.status = "ERROR"
                 break
@@ -584,10 +586,13 @@ class GameController:
             for gi, gp in enumerate(self.ghost_positions):
                 self.log(f"  Ghost {gi} -> {gp}", (38, 198, 218))
 
+            if len(self.remaining_foods) < prev_food_count:
+                self.log(f"  Đã ăn Food tại {self.pacman_pos}! Còn lại {len(self.remaining_foods)} Food | Điểm: {self.score}", (254, 240, 138))
+
             if state.pacman_position in self.remaining_goals:
                 self.remaining_goals.remove(state.pacman_position)
                 self.score += 20
-                self.log(f"Đã thu thập Goal tại {state.pacman_position}! Còn lại {len(self.remaining_goals)} Goal.", (52, 211, 153))
+                self.log(f"  Đã thu thập Goal tại {state.pacman_position}! Còn lại {len(self.remaining_goals)} Goal.", (52, 211, 153))
 
             # Kiểm tra trạng thái kết thúc
             if state.status == "LOSE":

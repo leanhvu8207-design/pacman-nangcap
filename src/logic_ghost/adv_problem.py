@@ -23,6 +23,8 @@ class AdvProblem:
         Đầu vào: target_pos (tuple (r, c)).
         Đầu ra: dict lưu khoảng cách từ mỗi ô tới target_pos.
         """
+        if target_pos is None:
+            return {}
         distance_map = {}
         distance_map[target_pos] = 0
 

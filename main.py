@@ -293,10 +293,10 @@ def main():
             return
 
         remaining_goals = list(goals)
-        if len(remaining_goals) > 0:
-            target = min(remaining_goals, key=lambda g: abs(spawn[0] - g[0]) + abs(spawn[1] - g[1]))
-        elif len(foods) > 0:
+        if len(foods) > 0:
             target = find_nearest_food(spawn, set(foods), game_map)
+        elif len(remaining_goals) > 0:
+            target = find_nearest_food(spawn, set(remaining_goals), game_map)
         else:
             target = None
 
@@ -349,10 +349,10 @@ def main():
         huong_nguoc_lai = {"UP": "DOWN", "DOWN": "UP", "LEFT": "RIGHT", "RIGHT": "LEFT"}
 
         while buoc < max_steps:
-            if len(remaining_goals) > 0:
-                target = min(remaining_goals, key=lambda g: abs(state.pacman_position[0] - g[0]) + abs(state.pacman_position[1] - g[1]))
-            elif len(state.food) > 0:
+            if len(state.food) > 0:
                 target = find_nearest_food(state.pacman_position, state.food, game_map)
+            elif len(remaining_goals) > 0:
+                target = find_nearest_food(state.pacman_position, set(remaining_goals), game_map)
             else:
                 target = None
 
@@ -384,7 +384,9 @@ def main():
             lich_su_actions.append(act)
 
             # Cho Pacman va Ghost di chuyen
-            state = state.step(act, target)
+            prev_food_count = len(state.food)
+            is_final = (len(state.food) == 0 and len(remaining_goals) <= 1)
+            state = state.step(act, target, is_final_goal=is_final)
             lich_su_positions.append(state.pacman_position)
 
             print(f"\n[Buoc {buoc}] Pacman di: {act}")
@@ -393,6 +395,9 @@ def main():
             info_food = f" | Food con lai: {len(state.food)}" if len(foods) > 0 else ""
             print(f"  Diem eval: {ai.last_value}{info_score}{info_food} | Nodes: {ai.expanded_count} | Time: {round(ai.time_used, 5)}s")
             in_ban_do(game_map, state.pacman_position, state.ghost_positions, target, state.food)
+
+            if len(state.food) < prev_food_count:
+                print(f"  [+] Da an Food tai {state.pacman_position}! Con lai {len(state.food)} Food")
 
             if state.pacman_position in remaining_goals:
                 remaining_goals.remove(state.pacman_position)
@@ -505,10 +510,10 @@ def run_cli(map_path, algo_name, depth=2, mode="match"):
             return
 
         remaining_goals = list(goals)
-        if len(remaining_goals) > 0:
-            target = min(remaining_goals, key=lambda g: abs(spawn[0] - g[0]) + abs(spawn[1] - g[1]))
-        elif len(foods) > 0:
+        if len(foods) > 0:
             target = find_nearest_food(spawn, set(foods), game_map)
+        elif len(remaining_goals) > 0:
+            target = find_nearest_food(spawn, set(remaining_goals), game_map)
         else:
             target = None
 
@@ -534,10 +539,10 @@ def run_cli(map_path, algo_name, depth=2, mode="match"):
             max_steps = max(100, len(foods) * 4 if len(foods) > 0 else 60)
 
             while buoc < max_steps:
-                if len(remaining_goals) > 0:
-                    target = min(remaining_goals, key=lambda g: abs(state.pacman_position[0] - g[0]) + abs(state.pacman_position[1] - g[1]))
-                elif len(state.food) > 0:
+                if len(state.food) > 0:
                     target = find_nearest_food(state.pacman_position, state.food, game_map)
+                elif len(remaining_goals) > 0:
+                    target = find_nearest_food(state.pacman_position, set(remaining_goals), game_map)
                 else:
                     target = None
 
@@ -555,7 +560,8 @@ def run_cli(map_path, algo_name, depth=2, mode="match"):
                 if act is None:
                     break
                 lich_su_actions.append(act)
-                state = state.step(act, target)
+                is_final = (len(state.food) == 0 and len(remaining_goals) <= 1)
+                state = state.step(act, target, is_final_goal=is_final)
                 lich_su_positions.append(state.pacman_position)
                 if state.pacman_position in remaining_goals:
                     remaining_goals.remove(state.pacman_position)

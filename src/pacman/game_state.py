@@ -137,7 +137,7 @@ class GameState:
     def check_pacman_caught(self):
         return self.pacman_position in self.ghost_positions
     
-    def step(self, pacman_action, target):
+    def step(self, pacman_action, target, is_final_goal=False):
         next_state = self.move(pacman_action)
         if next_state is None:
             return None
@@ -147,8 +147,8 @@ class GameState:
             next_state.status = "LOSE"
             return next_state
 
-        # Pacman tới đích
-        if next_state.pacman_position == target:
+        # Pacman tới đích cuối cùng (khi đã hoàn thành hết food hoặc được chỉ định là final goal)
+        if next_state.pacman_position == target and (is_final_goal or len(next_state.food) == 0):
             next_state.status = "WIN"
             return next_state
 
