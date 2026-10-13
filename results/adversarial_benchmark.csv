@@ -1,16 +1,16 @@
 map,depth,act_mm,act_ab,val_mm,val_ab,nodes_mm,nodes_ab,time_mm_ms,time_ab_ms,prune_pct,match
-adversarial_single_ghost_corridor,1,RIGHT,RIGHT,-286,-286,8,8,0.74,0.09,0.0,True
-adversarial_single_ghost_corridor,2,RIGHT,RIGHT,-270,-270,60,51,0.82,0.23,15.0,True
-adversarial_single_ghost_corridor,3,RIGHT,RIGHT,-290,-290,411,276,2.02,1.12,32.8,True
-adversarial_two_ghosts_pincer,1,LEFT,LEFT,-204,-204,26,16,0.43,0.09,38.5,True
-adversarial_two_ghosts_pincer,2,LEFT,LEFT,-184,-184,426,185,3.57,1.75,56.6,True
-adversarial_two_ghosts_pincer,3,LEFT,LEFT,-166,-166,4986,1586,26.48,9.86,68.2,True
-adversarial_dead_end_trap,1,DOWN,DOWN,-19964,-19964,6,5,0.15,0.03,16.7,True
-adversarial_dead_end_trap,2,DOWN,DOWN,-19964,-19964,30,17,0.23,0.09,43.3,True
-adversarial_dead_end_trap,3,DOWN,DOWN,-19964,-19964,134,44,0.8,0.6,67.2,True
-test_map (2 Ghosts),1,RIGHT,RIGHT,-404,-404,20,20,0.52,0.12,0.0,True
-test_map (2 Ghosts),2,RIGHT,RIGHT,-386,-386,212,182,1.41,0.84,14.2,True
-test_map (2 Ghosts),3,DOWN,DOWN,-370,-370,2507,910,12.22,4.93,63.7,True
-large_map (3 Ghosts),1,DOWN,DOWN,-424,-424,24,16,1.14,0.09,33.3,True
-large_map (3 Ghosts),2,DOWN,DOWN,-404,-404,384,152,4.62,0.8,60.4,True
-large_map (3 Ghosts),3,DOWN,DOWN,-384,-384,6684,1200,37.36,6.76,82.0,True
+adversarial_single_ghost_corridor,1,RIGHT,RIGHT,-540,-540,8,8,0.17,0.03,0.0,True
+adversarial_single_ghost_corridor,2,RIGHT,RIGHT,-500,-500,60,42,0.28,0.1,30.0,True
+adversarial_single_ghost_corridor,3,RIGHT,RIGHT,-540,-540,411,197,0.91,0.4,52.1,True
+adversarial_two_ghosts_pincer,1,LEFT,LEFT,-380,-380,26,16,0.23,0.04,38.5,True
+adversarial_two_ghosts_pincer,2,LEFT,LEFT,-340,-340,426,185,1.33,0.41,56.6,True
+adversarial_two_ghosts_pincer,3,LEFT,LEFT,-300,-300,4986,1574,11.48,3.5,68.4,True
+adversarial_dead_end_trap,1,DOWN,DOWN,-39900,-39900,6,5,0.06,0.02,16.7,True
+adversarial_dead_end_trap,2,DOWN,DOWN,-39900,-39900,30,17,0.13,0.05,43.3,True
+adversarial_dead_end_trap,3,DOWN,DOWN,-39900,-39900,134,44,0.29,0.09,67.2,True
+test_map (2 Ghosts),1,DOWN,DOWN,-780,-780,20,13,0.15,0.03,35.0,True
+test_map (2 Ghosts),2,DOWN,DOWN,-740,-740,212,115,0.6,0.27,45.8,True
+test_map (2 Ghosts),3,DOWN,DOWN,-700,-700,2507,772,5.53,1.76,69.2,True
+large_map (3 Ghosts),1,DOWN,DOWN,-820,-820,24,16,0.68,0.05,33.3,True
+large_map (3 Ghosts),2,DOWN,DOWN,-780,-780,384,152,3.52,0.39,60.4,True
+large_map (3 Ghosts),3,DOWN,DOWN,-740,-740,6684,1200,16.57,2.96,82.0,True

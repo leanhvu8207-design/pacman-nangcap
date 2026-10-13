@@ -1,11 +1,9 @@
 import time
 import heapq
 
-"""
-Mở rộng node có chi phí đường đi g(n) tích lũy nhỏ nhất bằng hàng đợi ưu tiên (min-heap).
-"""
-
 class UCS:
+    """Tìm kiếm chi phí đồng nhất (Uniform-Cost Search) sử dụng min-heap theo g(n)."""
+
     def __init__(self, problem):
         self.problem = problem
         self.expanded_count = 0
@@ -28,12 +26,12 @@ class UCS:
                 continue
 
             visited.add(state)
-            self.expanded_count += 1
 
             if self.problem.reached_target(state):
                 self.time_used = time.time() - start_time
                 return actions
 
+            self.expanded_count += 1
             successors = self.problem.expand_pacman_moves(state)
 
             for next_state, next_action, move_cost in successors:

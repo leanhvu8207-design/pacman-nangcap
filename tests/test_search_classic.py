@@ -9,7 +9,6 @@ from src.search.ucs import UCS
 from src.search.greedy import Greedy
 from src.search.a_star import AStar
 
-
 class TestClassicalSearch(unittest.TestCase):
     """
     Kiểm thử hồi quy (Regression Test) cho các thuật toán tìm kiếm cổ điển đơn tác tử.
@@ -100,7 +99,6 @@ class TestClassicalSearch(unittest.TestCase):
         self.assertIsNotNone(actions)
         self.assertGreater(len(actions), 0)
 
-        # Mô phỏng đường đi để xác nhận: ăn sạch thức ăn và kết thúc tại goal
         curr_state = mg_problem.get_pacman_spawn()
         for act in actions:
             curr_state = curr_state.move(act)
@@ -159,7 +157,6 @@ class TestClassicalSearch(unittest.TestCase):
         """
         Kiểm tra cơ chế trọng số di chuyển không đồng nhất (Non-uniform cost).
         """
-        # Định nghĩa hàm chi phí: các ô ở cột > 5 có chi phí đắt hơn
         def weighted_cost(pos):
             r, c = pos
             return 5 if c > 5 else 1
@@ -170,7 +167,6 @@ class TestClassicalSearch(unittest.TestCase):
         self.assertIsNotNone(actions)
         total_cost = prob.measure_path_cost(actions)
         self.assertGreater(total_cost, len(actions))
-
 
 if __name__ == "__main__":
     unittest.main()

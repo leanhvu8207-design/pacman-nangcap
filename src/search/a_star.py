@@ -1,10 +1,9 @@
 import time
 import heapq
-"""
-Đánh giá độ ưu tiên node theo hàm f(n) = g(n) + h(n):
-"""
 
 class AStar:
+    """Tìm kiếm A* tối ưu theo f(n) = g(n) + h(n)."""
+
     def __init__(self, problem):
         self.problem = problem
         self.expanded_count = 0
@@ -32,12 +31,12 @@ class AStar:
                 continue
 
             visited.add(state)
-            self.expanded_count += 1
 
             if self.problem.reached_target(state):
                 self.time_used = time.time() - start_time
                 return actions
 
+            self.expanded_count += 1
             successors = self.problem.expand_pacman_moves(state)
 
             for next_state, next_action, move_cost in successors:

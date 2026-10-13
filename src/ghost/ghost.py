@@ -1,6 +1,5 @@
 from collections import deque
 
-
 class Ghost:
     def __init__(self, position):
         self.position = position
@@ -49,19 +48,16 @@ class Ghost:
             return None
 
         if self.position == pacman_position:
-            return None
+            return valid_actions[0]
 
         other_ghosts = set(other_ghost_positions) if other_ghost_positions else set()
 
-        # Lọc các hành động an toàn không đi vào ô của Ghost khác
         safe_actions = [
             act for act in valid_actions
             if self.get_next_position(act, game_map) not in other_ghosts
         ]
-        # Nếu bị quây kín không có lối đi an toàn nào thì dùng valid_actions
         candidate_actions = safe_actions if safe_actions else valid_actions
 
-        # 1. Tìm đường đi ngắn nhất bằng BFS tới Pacman (coi các Ghost khác là vật cản tạm thời)
         queue = deque([(self.position, None)])
         visited = {self.position} | other_ghosts
         first_step_to_target = None
@@ -86,7 +82,6 @@ class Ghost:
         if first_step_to_target is not None and first_step_to_target in candidate_actions:
             return first_step_to_target
 
-        # 2. Nếu không tìm được đường né Ghost, thử BFS thông thường nhưng ưu tiên bước đầu không đè lên Ghost khác
         queue2 = deque([(self.position, None)])
         visited2 = {self.position}
         while queue2:
@@ -104,7 +99,6 @@ class Ghost:
                         next_first_act = first_act if first_act is not None else act
                         queue2.append(((nr, nc), next_first_act))
 
-        # 3. Fallback: chọn hành động có cự ly Manhattan nhỏ nhất tới Pacman trong danh sách ứng viên
         best_action = candidate_actions[0]
         best_distance = float("inf")
         for action in candidate_actions:

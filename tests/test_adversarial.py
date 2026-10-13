@@ -6,7 +6,6 @@ from src.logic_ghost.minimax import Minimax
 from src.logic_ghost.alpha_beta import AlphaBeta
 from src.pacman.game_state import GameState
 
-
 class TestAdversarialSearch(unittest.TestCase):
     def setUp(self):
         self.small_map = load_map("maps/adversarial_small.txt")
@@ -23,11 +22,8 @@ class TestAdversarialSearch(unittest.TestCase):
             ab = AlphaBeta(problem, depth)
             act_ab = ab.search()
 
-            # Xác minh cùng hành động
             self.assertEqual(act_mm, act_ab, f"Hành động không khớp tại depth={depth}")
-            # Xác minh cùng giá trị tối ưu
             self.assertEqual(mm.last_value, ab.last_value, f"Giá trị tối ưu không khớp tại depth={depth}")
-            # Xác minh Alpha-Beta duyệt số node nhỏ hơn hoặc bằng Minimax
             self.assertLessEqual(ab.expanded_count, mm.expanded_count)
 
     def test_alpha_beta_pruning_efficiency_on_larger_map(self):
@@ -40,7 +36,6 @@ class TestAdversarialSearch(unittest.TestCase):
 
         self.assertEqual(act_mm, act_ab)
         self.assertEqual(mm.last_value, ab.last_value)
-        # Số node của Alpha-Beta phải giảm đáng kể so với Minimax
         self.assertLess(ab.expanded_count, mm.expanded_count)
 
     def test_pacman_wins_on_small_map_simulation(self):
@@ -71,12 +66,10 @@ class TestAdversarialSearch(unittest.TestCase):
         """
         Kiểm tra Pacman tuyệt đối không đi vào ô có Ghost ngay bước đầu tiên nếu có lựa chọn khác.
         """
-        # Giả lập tình huống Pacman ở kề Ghost
         problem = AdvProblem((1, 2), [(1, 3)], (1, 4), self.small_map)
         ab = AlphaBeta(problem, depth_limit=2)
         action = ab.search()
 
-        # Pacman không được đi RIGHT (đâm vào Ghost tại (1, 3))
         self.assertNotEqual(action, "RIGHT", "Pacman không được đâm thẳng vào Ghost khi có lối khác!")
 
     def test_minimax_and_alpha_beta_equivalence_with_recent_positions(self):
@@ -93,7 +86,6 @@ class TestAdversarialSearch(unittest.TestCase):
             self.assertEqual(act_mm, act_ab, f"Hành động không khớp tại depth={depth} với recent_positions")
             self.assertEqual(mm.last_value, ab.last_value, f"Giá trị tối ưu không khớp tại depth={depth} với recent_positions")
             self.assertLessEqual(ab.expanded_count, mm.expanded_count)
-
 
 if __name__ == "__main__":
     unittest.main()

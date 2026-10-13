@@ -3,6 +3,6 @@ DANH GIA HEURISTIC: SO SANH UCS, A*(h=0) VA A* VOI HEURISTIC DE XUAT
 ================================================================================
 Test Case                      | UCS Nodes  | A*(h=0) Nodes  | A*(h) Nodes  | Reduction (%)
 --------------------------------------------------------------------------------
-test_map (Single-Goal)         | 59         | 59             | 53           | 10.2        %
-large_map (Single-Goal)        | 175        | 175            | 65           | 62.9        %
-multi_goal_test (Multi-Goal)   | 256        | 256            | 54           | 78.9        %
+test_map (Single-Goal)         | 58         | 58             | 52           | 10.3        %
+large_map (Single-Goal)        | 174        | 174            | 64           | 63.2        %
+multi_goal_test (Multi-Goal)   | 255        | 255            | 53           | 79.2        %

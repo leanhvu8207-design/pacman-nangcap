@@ -12,14 +12,17 @@ class MultiGoal:
         self._mst_cache = {}
     
     def get_pacman_spawn(self):
-        return GameState(self.pacman_spawn, [], set(self.food),
-                        0, self.game_map)
+        initial_food = set(self.food)
+        initial_score = 0
+        if self.pacman_spawn in initial_food:
+            initial_food.remove(self.pacman_spawn)
+            initial_score += 10
+        return GameState(self.pacman_spawn, [], initial_food,
+                        initial_score, self.game_map)
     
     def reached_target(self, state: GameState):
-        # 1. Bắt buộc phải ăn hết toàn bộ thức ăn
         if len(state.food) > 0:
             return False
-        # 2. Nếu có đích đến cuối cùng Goal (G), Pacman phải tới vị trí đó
         if self.goal is not None:
             return state.pacman_position == self.goal
         return True
@@ -94,17 +97,14 @@ class MultiGoal:
 
         pm_r, pm_c = state.pacman_position
 
-        # Nếu đã ăn hết thức ăn nhưng có ô Goal (G) cuối cùng
         if len(state.food) == 0:
             if self.goal is not None:
                 gr, gc = self.goal
                 return abs(pm_r - gr) + abs(pm_c - gc)
             return 0
 
-        # Khoảng cách từ Pacman tới viên thức ăn gần nhất
         min_dist_to_food = min(abs(pm_r - fr) + abs(pm_c - fc) for fr, fc in state.food)
 
-        # Chi phí cây khung nhỏ nhất (MST) kết nối các viên thức ăn còn lại
         food_key = frozenset(state.food)
         if food_key not in self._mst_cache:
             self._mst_cache[food_key] = self._compute_mst_cost(list(state.food))
@@ -112,7 +112,6 @@ class MultiGoal:
 
         total_h = min_dist_to_food + mst_cost
 
-        # Nếu có Goal cuối cùng sau khi gom hết thức ăn
         if self.goal is not None:
             gr, gc = self.goal
             min_food_to_goal = min(abs(fr - gr) + abs(fc - gc) for fr, fc in state.food)

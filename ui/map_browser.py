@@ -33,7 +33,6 @@ from ui.theme import (
     BTN_ACTIVE,
 )
 
-# Từ điển mô tả chức năng kiểm thử của từng bản đồ
 MAP_METADATA = {
     "single_goal_small_open.txt": {
         "title": "Bản đồ nhỏ không gian mở (Small Open)",
@@ -157,7 +156,6 @@ MAP_METADATA = {
     },
 }
 
-
 class MapBrowserModal:
     """Cửa sổ Modal tương tác duyệt và xem trước toàn cảnh bản đồ (Overview & Mini-Map Preview)"""
 
@@ -175,10 +173,9 @@ class MapBrowserModal:
 
         self.screen_w = w
         self.screen_h = h
-        self.map_files = [m for m in (maps or []) if "bad_map" not in m]  # Lọc bỏ map lỗi test
+        self.map_files = [m for m in (maps or []) if "bad_map" not in m]
         self.on_select = cb
 
-        # Khung modal chính giữa màn hình
         modal_w = 1040
         modal_h = 630
         self.rect = pygame.Rect(
@@ -188,19 +185,15 @@ class MapBrowserModal:
             modal_h
         )
 
-        # Chọn map ban đầu
         self.selected_map = cur if cur in self.map_files else (self.map_files[0] if self.map_files else None)
-        self.cached_map_data = {}  # Cache kết quả nạp map và thông số
+        self.cached_map_data = {}
         self.scroll_y = 0
         self.item_height = 46
 
-        # Nút đóng
         self.close_btn_rect = pygame.Rect(self.rect.right - 42, self.rect.y + 14, 28, 28)
 
-        # Nút chọn map vào game
         self.confirm_btn_rect = pygame.Rect(self.rect.right - 260, self.rect.bottom - 48, 236, 36)
 
-        # Pre-load thông tin của map hiện tại
         if self.selected_map:
             self._load_map_details(self.selected_map)
 
@@ -238,7 +231,6 @@ class MapBrowserModal:
 
     def handle_event(self, event):
         """Xử lý sự kiện bàn phím và chuột trong modal"""
-        # Phím ESC đóng modal
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 return "CLOSE"
@@ -248,37 +240,31 @@ class MapBrowserModal:
                         self.on_select(self.selected_map)
                     return "SELECT"
 
-        # Bắt sự kiện click chuột
         if event.type == pygame.MOUSEBUTTONDOWN:
             mx, my = event.pos
 
-            # Click nút đóng [X]
             if self.close_btn_rect.collidepoint(mx, my):
                 return "CLOSE"
 
-            # Click ra ngoài modal -> đóng
             if not self.rect.collidepoint(mx, my):
                 return "CLOSE"
 
-            # Click nút xác nhận [CHỌN BẢN ĐỒ NÀY]
             if self.confirm_btn_rect.collidepoint(mx, my):
                 if self.selected_map:
                     if self.on_select:
                         self.on_select(self.selected_map)
                     return "SELECT"
 
-            # Cuộn danh sách bằng con lăn chuột
             list_rect = pygame.Rect(self.rect.x + 20, self.rect.y + 60, 420, self.rect.height - 80)
             if list_rect.collidepoint(mx, my):
-                if event.button == 4:  # Cuộn lên
+                if event.button == 4:
                     self.scroll_y = max(0, self.scroll_y - 28)
                     return True
-                elif event.button == 5:  # Cuộn xuống
+                elif event.button == 5:
                     max_scroll = max(0, len(self.map_files) * self.item_height - (list_rect.height - 20))
                     self.scroll_y = min(max_scroll, self.scroll_y + 28)
                     return True
 
-                # Click chọn một map trong danh sách
                 rel_y = my - (self.rect.y + 68) + self.scroll_y
                 if rel_y >= 0:
                     clicked_idx = rel_y // self.item_height
@@ -291,30 +277,24 @@ class MapBrowserModal:
 
     def draw(self, surface):
         """Vẽ toàn bộ Modal: Nền làm mờ, Danh sách bên trái, Mini-Map Preview bên phải"""
-        # 1. Lớp phủ làm tối màn hình nền (Dim backdrop)
         dim_surf = pygame.Surface((self.screen_w, self.screen_h), pygame.SRCALPHA)
         dim_surf.fill((8, 10, 18, 210))
         surface.blit(dim_surf, (0, 0))
 
-        # 2. Khung modal chính Arcade Cabinet
         draw_arcade_panel(surface, self.rect, bg_color=(15, 20, 32), corner_radius=8)
 
-        # Viền sáng neon nổi bật quanh modal
         pygame.draw.rect(surface, (56, 189, 248), self.rect, width=2, border_radius=8)
 
-        # Header Tiêu đề
         font_title = get_font("header")
         hdr_txt = font_title.render("🗺 BỘ DUYỆT & XEM TRƯỚC BẢN ĐỒ (MAP BROWSER & OVERVIEW)", True, (251, 191, 36))
         surface.blit(hdr_txt, (self.rect.x + 24, self.rect.y + 18))
 
-        # Nút đóng [X]
         pygame.draw.rect(surface, (35, 41, 66), self.close_btn_rect, border_radius=4)
         pygame.draw.rect(surface, BORDER_COLOR, self.close_btn_rect, width=1, border_radius=4)
         font_btn = get_font("badge")
         x_surf = font_btn.render("X", True, (244, 63, 94))
         surface.blit(x_surf, x_surf.get_rect(center=self.close_btn_rect.center))
 
-        # Phân chia: Cột trái (Danh sách map) và Cột phải (Vùng xem trước Preview)
         self._draw_map_list(surface)
         self._draw_preview_panel(surface)
 
@@ -324,7 +304,6 @@ class MapBrowserModal:
         pygame.draw.rect(surface, (12, 15, 25), list_rect, border_radius=6)
         pygame.draw.rect(surface, BORDER_COLOR, list_rect, width=1, border_radius=6)
 
-        # Sử dụng clip rect để nội dung không tràn ra ngoài vùng cuộn
         prev_clip = surface.get_clip()
         surface.set_clip(list_rect.inflate(-4, -4))
 
@@ -340,7 +319,6 @@ class MapBrowserModal:
             item_rect = pygame.Rect(list_rect.x + 6, item_y, list_rect.width - 12, self.item_height - 4)
             is_selected = (mpath == self.selected_map)
 
-            # Màu nền item
             if is_selected:
                 pygame.draw.rect(surface, (30, 41, 69), item_rect, border_radius=4)
                 pygame.draw.rect(surface, (56, 189, 248), item_rect, width=2, border_radius=4)
@@ -348,16 +326,13 @@ class MapBrowserModal:
                 pygame.draw.rect(surface, (18, 23, 38), item_rect, border_radius=4)
                 pygame.draw.rect(surface, (30, 36, 56), item_rect, width=1, border_radius=4)
 
-            # Lấy thông tin tóm tắt
             fname = mpath.split("/")[-1].split("\\")[-1]
             meta = MAP_METADATA.get(fname, {"title": fname, "tag": "MAP", "tag_color": (148, 163, 184)})
 
-            # Tên file
             name_color = (255, 214, 10) if is_selected else (241, 245, 249)
             name_surf = font_name.render(fname, True, name_color)
             surface.blit(name_surf, (item_rect.x + 10, item_rect.y + 6))
 
-            # Nhãn thể loại
             tag_text = meta.get("tag", "MAP")
             tag_color = meta.get("tag_color", (56, 189, 248))
             tag_surf = font_tag.render(tag_text, True, tag_color)
@@ -386,12 +361,10 @@ class MapBrowserModal:
         cols = data["cols"]
         meta = data["meta"]
 
-        # 1. TIÊU ĐỀ BẢN ĐỒ VÀ MÔ TẢ
         font_t = get_font("header")
         t_surf = font_t.render(meta.get("title", data["filename"]), True, (254, 240, 138))
         surface.blit(t_surf, (preview_x + 14, self.rect.y + 70))
 
-        # Thẻ mô tả chức năng test
         font_b = get_font("body")
         desc_lines = self._wrap_text(meta.get("desc", ""), font_b, preview_w - 28)
         cur_dy = self.rect.y + 96
@@ -400,7 +373,6 @@ class MapBrowserModal:
             surface.blit(d_surf, (preview_x + 14, cur_dy))
             cur_dy += 18
 
-        # 2. KHUNG VẼ BẢN ĐỒ THU NHỎ (MINI-MAP CANVAS)
         canvas_y = cur_dy + 8
         canvas_h = self.rect.bottom - canvas_y - 64
         canvas_w = preview_w - 28
@@ -409,7 +381,6 @@ class MapBrowserModal:
         pygame.draw.rect(surface, (8, 10, 18), canvas_rect, border_radius=4)
         pygame.draw.rect(surface, (35, 41, 66), canvas_rect, width=1, border_radius=4)
 
-        # Tính toán kích thước tile cho Mini-Map Preview
         tile_w = (canvas_w - 16) // max(1, cols)
         tile_h = (canvas_h - 16) // max(1, rows)
         tile_size = max(4, min(24, min(tile_w, tile_h)))
@@ -419,7 +390,6 @@ class MapBrowserModal:
         offset_x = canvas_rect.x + (canvas_w - maze_px_w) // 2
         offset_y = canvas_rect.y + (canvas_h - maze_px_h) // 2
 
-        # Render từng ô của mê cung
         for r in range(rows):
             for c in range(cols):
                 char = gmap[r][c]
@@ -428,20 +398,16 @@ class MapBrowserModal:
                 t_rect = pygame.Rect(rx, ry, tile_size, tile_size)
 
                 if char == "#":
-                    # Tường Arcade
                     pygame.draw.rect(surface, WALL_FILL, t_rect)
                     pygame.draw.rect(surface, WALL_BORDER, t_rect, width=1)
                 else:
-                    # Đường đi
                     pygame.draw.rect(surface, (14, 17, 28), t_rect)
 
-                    # Food (.)
                     if char == ".":
                         cx = rx + tile_size // 2
                         cy = ry + tile_size // 2
                         pygame.draw.circle(surface, FOOD_PELLET, (cx, cy), max(1, tile_size // 4))
 
-                    # Goal (G)
                     elif char == "G":
                         cx = rx + tile_size // 2
                         cy = ry + tile_size // 2
@@ -449,26 +415,22 @@ class MapBrowserModal:
                         pts = [(cx, cy - rad), (cx + rad, cy), (cx, cy + rad), (cx - rad, cy)]
                         pygame.draw.polygon(surface, GOAL_POINT, pts)
 
-                    # Ghost (@)
                     elif char == "@":
                         cx = rx + tile_size // 2
                         cy = ry + tile_size // 2
                         pygame.draw.circle(surface, (239, 68, 68), (cx, cy), max(2, int(tile_size * 0.38)))
 
-                    # Pacman (P)
                     elif char == "P":
                         cx = rx + tile_size // 2
                         cy = ry + tile_size // 2
                         pygame.draw.circle(surface, COLOR_PACMAN, (cx, cy), max(3, int(tile_size * 0.42)))
 
-        # 3. THANH THỐNG SỐ BẢN ĐỒ TỔNG QUÁT DƯỚI ĐÁY
         info_y = self.rect.bottom - 48
         font_info = get_font("body")
         specs_str = f"Lưới: {rows}x{cols}  |  P: {data['spawn']}  |  Food: {len(data['foods'])}  |  Goal: {len(data['goals'])}  |  Ghost: {len(data['ghosts'])}"
         specs_surf = font_info.render(specs_str, True, (148, 163, 184))
         surface.blit(specs_surf, (preview_x + 14, info_y + 8))
 
-        # Nút xác nhận [CHỌN BẢN ĐỒ NÀY VÀO TRÒ CHƠI]
         pygame.draw.rect(surface, (16, 185, 129), self.confirm_btn_rect, border_radius=4)
         pygame.draw.rect(surface, (110, 231, 183), self.confirm_btn_rect, width=1, border_radius=4)
         font_btn = get_font("badge")

@@ -30,7 +30,6 @@ def get_map_info(game_map, return_foods=False):
     if return_foods:
         return spawn, goals, ghosts, foods
 
-    # Nếu không yêu cầu tách foods riêng và map không có G nhưng có .
     if len(goals) == 0 and len(foods) > 0:
         return spawn, foods, ghosts
 

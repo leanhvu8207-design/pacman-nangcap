@@ -1,53 +1,29 @@
 def check_map(game_map):
     """
-    Check Map rỗng
+    Kiểm tra tính hợp lệ của bản đồ:
+    - Không rỗng và có cấu trúc hình chữ nhật đồng nhất.
+    - Ký tự hợp lệ: # (Tường), . (Food), P (Pacman), G (Goal), @ (Ghost), khoảng trắng.
+    - Đúng 1 Pacman và ít nhất 1 mục tiêu (Goal hoặc Food).
     """
-    if len(game_map)==0:
+    if not game_map:
         return False
-    
-    """
-    Check cấu trúc map hợp lệ
-    """
-    
-    for line in game_map: 
-        if len(line) != len(game_map[0]):
+
+    width = len(game_map[0])
+    for line in game_map:
+        if len(line) != width:
             return False
-    
-    
-    """
-    Check ký tự hợp lệ trong map
-    # : Tường
-    . : Food
-    P : Pacman
-    G : Goal
-    @ : Ghost
-    " " : Khoảng trống
-    """
-    allowed_char = "#.PG@ "
-    for line in game_map:  
+
+    allowed_char = set("#.PG@ ")
+    p_count = 0
+    target_count = 0
+
+    for line in game_map:
         for char in line:
             if char not in allowed_char:
                 return False
-            
-    
-    """
-    Bản đồ phải có:
-    - Đúng 1 Pacman (P)
-    - Ít nhất 1 mục tiêu: có thể là Goal (G) hoặc Food (.) hoặc cả hai
-    """
-    p_count = 0
-    g_count = 0
-    food_count = 0
-    for line in game_map:
-        p_count += line.count("P")
-        g_count += line.count("G")
-        food_count += line.count(".")
-        
-    if p_count != 1:
-        return False
-    if g_count + food_count < 1:
-        return False
-    
-    return True
+            if char == "P":
+                p_count += 1
+            elif char in ("G", "."):
+                target_count += 1
 
-
+    return p_count == 1 and target_count >= 1

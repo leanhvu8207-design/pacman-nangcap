@@ -7,7 +7,6 @@ import sys
 import os
 import pygame
 
-# Đảm bảo đường dẫn import hoạt động tốt
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from ui.theme import (
@@ -42,7 +41,6 @@ from ui.map_browser import MapBrowserModal
 from ui.renderer import MazeRenderer
 from ui.controller import GameController
 
-
 class PacmanVintageUI:
     """Ứng dụng giao diện Retro Arcade hoàn chỉnh"""
 
@@ -58,18 +56,14 @@ class PacmanVintageUI:
 
         init_fonts()
 
-        # Khởi tạo log box trước để nhận log từ controller
         self.log_box = ScrollableLogBox(pygame.Rect(812, 546, 420, 208))
 
-        # Khởi tạo Game Controller
         self.controller = GameController(log_callback=self.on_log_received)
 
-        # Khởi tạo Renderer cho vùng Mê cung
         self.maze_viewport = pygame.Rect(16, 74, 768, 690)
         self.maze_renderer = MazeRenderer(self.maze_viewport)
         self.maze_renderer.compute_layout(self.controller.game_map)
 
-        # Khởi tạo Modal duyệt và xem trước toàn cảnh bản đồ
         self.map_browser = MapBrowserModal(
             (self.width, self.height),
             self.controller.map_files,
@@ -78,14 +72,12 @@ class PacmanVintageUI:
         )
         self.show_map_browser = False
 
-        # Khởi tạo các thành phần giao diện tương tác chuột
         self._init_ui_components()
 
     def on_log_received(self, text, color):
         self.log_box.add_log(text, color)
 
     def _init_ui_components(self):
-        # 1. Map Selector
         self.map_selector = MapSelector(
             pygame.Rect(812, 98, 420, 28),
             self.controller.map_files,
@@ -94,8 +86,6 @@ class PacmanVintageUI:
             on_open_browser=self.open_map_browser
         )
 
-        # 2. Algorithm Tabs
-        # Hàng 1: Thuật toán cổ điển 5 nút
         classic_algos = ["DFS", "BFS", "UCS", "GREEDY", "A*"]
         btn_w_classic = 78
         rects_classic = [
@@ -112,7 +102,6 @@ class PacmanVintageUI:
             allow_none=True
         )
 
-        # Hàng 2: Thuật toán đối kháng 2 nút
         adv_algos = ["MINIMAX", "ALPHA-BETA"]
         btn_w_adv = 206
         rects_adv = [
@@ -129,10 +118,8 @@ class PacmanVintageUI:
             allow_none=True
         )
 
-        # Đồng bộ đảm bảo chỉ duy nhất thuật toán A* sáng, Minimax/Alpha-Beta tắt hoàn toàn
         self.on_algorithm_changed(self.controller.algorithm)
 
-        # 3. Contextual Controls (Depth & Adversarial Mode)
         self.depth_stepper = NumberStepper(
             pygame.Rect(812, 197, 190, 26),
             label="Depth",
@@ -151,7 +138,6 @@ class PacmanVintageUI:
             font_key="subtitle"
         )
 
-        # 4. Action Buttons (Start, Pause, Step, Reset)
         act_y = 230
         act_w = 100
         act_gap = 7
@@ -184,7 +170,6 @@ class PacmanVintageUI:
             font_key="header"
         )
 
-        # 5. Speed Buttons (0.5x, 1x, 2x, 4x, Max)
         speeds = [0.5, 1.0, 2.0, 4.0, 10.0]
         speed_labels = ["0.5x", "1.0x", "2.0x", "4.0x", "Max"]
         sp_w = 66
@@ -232,7 +217,6 @@ class PacmanVintageUI:
 
     def on_algorithm_changed(self, algo_name):
         self.controller.set_algorithm(algo_name)
-        # Đồng bộ trạng thái active giữa 2 nhóm nút
         if algo_name in ["DFS", "BFS", "UCS", "GREEDY", "A*"]:
             self.classic_group.selected_value = algo_name
             self.classic_group._update_states()
@@ -250,9 +234,6 @@ class PacmanVintageUI:
     def on_adv_mode_changed(self, new_mode):
         self.controller.set_adv_mode(new_mode)
 
-    # ==========================================================================
-    # VÒNG LẶP XỬ LÝ SỰ KIỆN CHUỘT VÀ PHÍM
-    # ==========================================================================
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -260,14 +241,12 @@ class PacmanVintageUI:
                 self.controller.stop_execution()
                 return
 
-            # Nếu Modal Map Browser đang mở, chuyển tiếp sự kiện và chặn tương tác phía dưới
             if self.show_map_browser:
                 res = self.map_browser.handle_event(event)
                 if res in ["CLOSE", "SELECT"]:
                     self.close_map_browser()
                 continue
 
-            # Phím tắt bàn phím tiện lợi
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_m:
                     self.open_map_browser()
@@ -284,12 +263,10 @@ class PacmanVintageUI:
                     self.controller.stop_execution()
                     return
 
-            # Tương tác chuột với các thành phần giao diện
             self.map_selector.handle_event(event)
             self.classic_group.handle_event(event)
             self.adv_group.handle_event(event)
 
-            # Chỉ tương tác depth & adv_mode khi đang chọn Minimax / Alpha-Beta
             if self.controller.algorithm in ["MINIMAX", "ALPHA-BETA"]:
                 self.depth_stepper.handle_event(event)
                 self.adv_mode_group.handle_event(event)
@@ -301,17 +278,11 @@ class PacmanVintageUI:
             self.speed_group.handle_event(event)
             self.log_box.handle_event(event)
 
-    # ==========================================================================
-    # VẼ TOÀN BỘ GIAO DIỆN
-    # ==========================================================================
     def render(self):
-        # 1. Nền tổng thể
         self.screen.fill(BG_MAIN)
 
-        # 2. Header
         self._draw_header()
 
-        # 3. Khu vực mê cung
         self.maze_renderer.update_animation()
         self.maze_renderer.draw_maze(
             self.screen,
@@ -322,7 +293,6 @@ class PacmanVintageUI:
             is_win=(self.controller.status == "WIN")
         )
 
-        # Vẽ các nhân vật trong mê cung
         if self.controller.pacman_pos:
             self.maze_renderer.draw_pacman(
                 self.screen,
@@ -340,12 +310,10 @@ class PacmanVintageUI:
                 facing_dir="DOWN"
             )
 
-        # 4. Khu vực Sidebar bên phải
         self._draw_control_panel()
         self._draw_metrics_panel()
         self._draw_activity_log_panel()
 
-        # 5. Modal Bộ duyệt và xem trước toàn cảnh bản đồ (nếu đang mở)
         if self.show_map_browser:
             self.map_browser.draw(self.screen)
 
@@ -356,12 +324,10 @@ class PacmanVintageUI:
         header_rect = pygame.Rect(16, 12, self.width - 32, 50)
         draw_arcade_panel(self.screen, header_rect, bg_color=BG_PANEL, corner_radius=6)
 
-        # Tên game: PACMAN AI SEARCH
         font_title = get_font("title")
         title_surf = font_title.render("PACMAN AI SEARCH", True, TEXT_TITLE)
         self.screen.blit(title_surf, (34, 22))
 
-        # Nhãn đồ án: GROUP 07
         font_badge = get_font("badge")
         grp_badge_rect = pygame.Rect(320, 24, 96, 26)
         pygame.draw.rect(self.screen, (40, 48, 75), grp_badge_rect, border_radius=4)
@@ -369,7 +335,6 @@ class PacmanVintageUI:
         grp_surf = font_badge.render("GROUP 07", True, (251, 191, 36))
         self.screen.blit(grp_surf, grp_surf.get_rect(center=grp_badge_rect.center))
 
-        # Trạng thái game (Ready, Running, Win, Lose, Paused)
         st_text = self.controller.status
         st_color = STATUS_COLORS.get(st_text, STATUS_COLORS["READY"])
         st_badge_rect = pygame.Rect(430, 24, 110, 26)
@@ -378,7 +343,6 @@ class PacmanVintageUI:
         st_surf = font_badge.render(f"● {st_text}", True, st_color)
         self.screen.blit(st_surf, st_surf.get_rect(center=st_badge_rect.center))
 
-        # Phím tắt gợi ý phía góc phải
         font_hint = get_font("small")
         hint_surf = font_hint.render("[M: Maps  |  Enter: Start  |  Space: Pause  |  S: Step  |  R: Reset]", True, (130, 145, 175))
         self.screen.blit(hint_surf, (self.width - hint_surf.get_width() - 36, 29))
@@ -388,27 +352,21 @@ class PacmanVintageUI:
         panel_rect = pygame.Rect(800, 74, 444, 226)
         draw_arcade_panel(self.screen, panel_rect, bg_color=BG_PANEL, corner_radius=6)
 
-        # Tiêu đề panel
         font_hdr = get_font("header")
         hdr_surf = font_hdr.render("■ BẢNG ĐIỀU KHIỂN (CONTROLS)", True, (241, 245, 249))
         self.screen.blit(hdr_surf, (814, 80))
 
-        # Nhãn chọn bản đồ
         font_sm = get_font("small")
 
-        # Vẽ bộ chọn bản đồ
         self.map_selector.draw(self.screen)
 
-        # Vẽ các nút chọn thuật toán
         self.classic_group.draw(self.screen)
         self.adv_group.draw(self.screen)
 
-        # Tùy biến ngữ cảnh: chỉ hiển thị Depth & Mode khi chọn Minimax / Alpha-Beta
         if self.controller.algorithm in ["MINIMAX", "ALPHA-BETA"]:
             self.depth_stepper.draw(self.screen)
             self.adv_mode_group.draw(self.screen)
         else:
-            # Nếu là thuật toán cổ điển, hiển thị loại bài toán
             info_rect = pygame.Rect(812, 197, 420, 26)
             pygame.draw.rect(self.screen, BG_PANEL_ALT, info_rect, border_radius=4)
             pygame.draw.rect(self.screen, BORDER_COLOR, info_rect, width=1, border_radius=4)
@@ -417,7 +375,6 @@ class PacmanVintageUI:
             desc_surf = font_sub.render(mode_desc, True, TEXT_OLD_PAPER)
             self.screen.blit(desc_surf, desc_surf.get_rect(center=info_rect.center))
 
-        # Cập nhật trạng thái nút Pause
         if self.controller.status == "PAUSED":
             self.btn_pause.text = "▶ RESUME"
             self.btn_pause.variant = "start"
@@ -425,13 +382,11 @@ class PacmanVintageUI:
             self.btn_pause.text = "⏸ PAUSE"
             self.btn_pause.variant = "pause"
 
-        # Vẽ các nút tác vụ
         self.btn_start.draw(self.screen)
         self.btn_pause.draw(self.screen)
         self.btn_step.draw(self.screen)
         self.btn_reset.draw(self.screen)
 
-        # Tốc độ mô phỏng
         sp_lbl = font_sm.render("Tốc độ:", True, TEXT_MUTED)
         self.screen.blit(sp_lbl, (814, 272))
         self.speed_group.draw(self.screen)
@@ -441,12 +396,10 @@ class PacmanVintageUI:
         panel_rect = pygame.Rect(800, 310, 444, 204)
         draw_arcade_panel(self.screen, panel_rect, bg_color=BG_PANEL, corner_radius=6)
 
-        # Tiêu đề panel
         font_hdr = get_font("header")
         hdr_surf = font_hdr.render("■ THỐNG KÊ AI (METRICS)", True, (241, 245, 249))
         self.screen.blit(hdr_surf, (814, 316))
 
-        # Chuẩn bị dữ liệu hiển thị (Thực tế, không làm giả)
         algo_name = self.controller.algorithm
         expanded_str = str(self.controller.expanded_count) if self.controller.expanded_count is not None else "--"
         time_str = f"{round(self.controller.time_used, 5)}s" if self.controller.time_used is not None else "--"
@@ -487,7 +440,6 @@ class PacmanVintageUI:
         font_lbl = get_font("small")
         font_val = get_font("subtitle")
 
-        # Vẽ 8 ô thông số dạng 4 hàng x 2 cột
         col_w = 205
         row_h = 36
         start_x = 812
@@ -503,11 +455,9 @@ class PacmanVintageUI:
             pygame.draw.rect(self.screen, BG_PANEL_ALT, b_rect, border_radius=4)
             pygame.draw.rect(self.screen, BORDER_COLOR, b_rect, width=1, border_radius=4)
 
-            # Label nhỏ ở trên
             l_surf = font_lbl.render(lbl, True, TEXT_MUTED)
             self.screen.blit(l_surf, (bx + 8, by + 3))
 
-            # Value to ở dưới
             v_surf = font_val.render(val, True, val_col)
             self.screen.blit(v_surf, (bx + 8, by + 17))
 
@@ -520,7 +470,6 @@ class PacmanVintageUI:
         hdr_surf = font_hdr.render("■ NHẬT KÝ HOẠT ĐỘNG (LOG)", True, (241, 245, 249))
         self.screen.blit(hdr_surf, (814, 528))
 
-        # Nút Clear log nhỏ
         font_sm = get_font("small")
         clear_rect = pygame.Rect(1178, 528, 54, 18)
         pygame.draw.rect(self.screen, (35, 41, 66), clear_rect, border_radius=3)
@@ -528,11 +477,9 @@ class PacmanVintageUI:
         c_surf = font_sm.render("Clear", True, TEXT_MUTED)
         self.screen.blit(c_surf, c_surf.get_rect(center=clear_rect.center))
 
-        # Bắt sự kiện click vào nút Clear
         if pygame.mouse.get_pressed()[0] and clear_rect.collidepoint(pygame.mouse.get_pos()):
             self.log_box.clear()
 
-        # Vẽ log box cuộn
         self.log_box.draw(self.screen)
 
     def run(self):
@@ -544,12 +491,10 @@ class PacmanVintageUI:
 
         pygame.quit()
 
-
 def run_ui():
     """Hàm khởi chạy giao diện từ main.py hoặc dòng lệnh"""
     app = PacmanVintageUI()
     app.run()
-
 
 if __name__ == "__main__":
     run_ui()

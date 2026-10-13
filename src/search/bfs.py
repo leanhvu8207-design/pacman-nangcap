@@ -1,7 +1,6 @@
 import time
 from collections import deque
 
-
 class BFS:
     def __init__(self, problem):
         self.problem = problem
@@ -20,12 +19,12 @@ class BFS:
 
         while len(queue) > 0:
             state, actions = queue.popleft()
-            self.expanded_count += 1
 
             if self.problem.reached_target(state):
                 self.time_used = time.time() - start_time
                 return actions
 
+            self.expanded_count += 1
             successors = self.problem.expand_pacman_moves(state)
 
             for next_state, next_action, cost in successors:

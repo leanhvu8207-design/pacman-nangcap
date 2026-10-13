@@ -27,7 +27,6 @@ from src.logic_ghost.adv_problem import AdvProblem
 from src.logic_ghost.minimax import Minimax
 from src.logic_ghost.alpha_beta import AlphaBeta
 
-
 def run_search_benchmark():
     maps = [
         ("single_goal_small_open", "maps/single_goal_small_open.txt"),
@@ -61,7 +60,6 @@ def run_search_benchmark():
             continue
         spawn, goals, ghosts, foods = get_map_info(gmap, return_foods=True)
 
-        # Chon kieu bai toan
         final_goal = goals[0] if len(goals) > 0 else None
         is_multi = len(foods) > 0 or len(goals) > 1
 
@@ -98,7 +96,6 @@ def run_search_benchmark():
             cost_str = str(cost) if found else "N/A"
             print(f"[{map_name:17}] {algo_name:7} | Found: {found_str:3} | Steps: {steps_str:>4} | Cost: {cost_str:>4} | Nodes: {nodes:>5} | Time: {time_ms:>7.2f}ms")
 
-    # Ghi file CSV
     os.makedirs("results", exist_ok=True)
     csv_file = "results/search_benchmark.csv"
     with open(csv_file, "w", newline="", encoding="utf-8") as f:
@@ -106,7 +103,6 @@ def run_search_benchmark():
         writer.writeheader()
         writer.writerows(results)
 
-    # Ghi file TXT
     txt_file = "results/search_benchmark.txt"
     with open(txt_file, "w", encoding="utf-8") as f:
         f.write("=" * 80 + "\n")
@@ -122,7 +118,6 @@ def run_search_benchmark():
 
     print(f"\n-> Da luu ket qua vao: {csv_file} va {txt_file}\n")
     return results
-
 
 def run_heuristic_evaluation():
     print("=================================================================")
@@ -179,7 +174,6 @@ def run_heuristic_evaluation():
         print(f"  A* (h = 0)          : Nodes = {s_a0.expanded_count:>5} | Time = {s_a0.time_used*1000:>6.2f}ms")
         print(f"  A* (proposed h)     : Nodes = {s_ah.expanded_count:>5} | Time = {s_ah.time_used*1000:>6.2f}ms  (Giam: {reduction}%)")
 
-    # Ghi file
     txt_file = "results/heuristic_evaluation.txt"
     with open(txt_file, "w", encoding="utf-8") as f:
         f.write("=" * 80 + "\n")
@@ -192,7 +186,6 @@ def run_heuristic_evaluation():
 
     print(f"\n-> Da luu ket qua vao: {txt_file}\n")
     return results
-
 
 def run_adversarial_benchmark():
     print("=================================================================")
@@ -252,7 +245,6 @@ def run_adversarial_benchmark():
             match_str = "MATCH" if match else "MISMATCH"
             print(f"[{map_name:26}] Depth {d} | MM: {nodes_mm:>5} nodes ({time_mm:>6.2f}ms) | AB: {nodes_ab:>5} nodes ({time_ab:>6.2f}ms) | Prune: {prune_pct:>5.1f}% | {match_str} (Act: {act_ab})")
 
-    # Ghi file CSV
     csv_file = "results/adversarial_benchmark.csv"
     with open(csv_file, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=[
@@ -262,7 +254,6 @@ def run_adversarial_benchmark():
         writer.writeheader()
         writer.writerows(results)
 
-    # Ghi file TXT
     txt_file = "results/adversarial_benchmark.txt"
     with open(txt_file, "w", encoding="utf-8") as f:
         f.write("=" * 95 + "\n")
@@ -276,7 +267,6 @@ def run_adversarial_benchmark():
 
     print(f"\n-> Da luu ket qua vao: {csv_file} va {txt_file}\n")
     return results
-
 
 if __name__ == "__main__":
     run_search_benchmark()

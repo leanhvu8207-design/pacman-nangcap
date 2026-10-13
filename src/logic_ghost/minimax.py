@@ -1,9 +1,8 @@
 import time
 
-"""
-Pacman (agent 0) là MAX agent, các Ghost (agent > 0) là MIN agennts
-"""
 class Minimax:
+    """Thuật toán Minimax giới hạn độ sâu: Pacman (agent 0 - MAX), Ghosts (agent > 0 - MIN)."""
+
     def __init__(self, problem, depth_limit, recent_positions=None):
         self.problem = problem
         self.depth_limit = depth_limit
@@ -34,7 +33,6 @@ class Minimax:
 
             value = self._minimax_value(next_state, next_depth, next_agent)
 
-            # Phạt nếu đi vào ô vừa đi qua nhiều lần trong các bước gần đây
             revisit_pen = 0
             if next_state.pacman_position in self.recent_positions:
                 count = self.recent_positions.count(next_state.pacman_position)
@@ -54,38 +52,27 @@ class Minimax:
         return best_action
 
     def _minimax_value(self, state, depth, agent):
-        # Điều kiện dừng: game kết thúc hoặc đã đạt độ sâu tối đa
-        if self.problem.is_terminal(state):
-            return self.problem.evaluate(state, depth)
-        if depth <= 0:
+        if self.problem.is_terminal(state) or depth <= 0:
             return self.problem.evaluate(state, depth)
 
-        # Lượt của Pacman (MAX node)
         if agent == 0:
             best = float("-inf")
             successors = self.problem.get_successors_for_agent(state, agent)
             for next_state, _action in successors:
                 self.expanded_count += 1
                 next_agent = self.problem.get_next_agent(agent)
-                if next_agent == 0:
-                    next_depth = depth - 1
-                else:
-                    next_depth = depth
+                next_depth = depth - 1 if next_agent == 0 else depth
                 value = self._minimax_value(next_state, next_depth, next_agent)
                 if value > best:
                     best = value
             return best
 
-        # Lượt của Ghost (MIN node)
         best = float("inf")
         successors = self.problem.get_successors_for_agent(state, agent)
         for next_state, _action in successors:
             self.expanded_count += 1
             next_agent = self.problem.get_next_agent(agent)
-            if next_agent == 0:
-                next_depth = depth - 1
-            else:
-                next_depth = depth
+            next_depth = depth - 1 if next_agent == 0 else depth
             value = self._minimax_value(next_state, next_depth, next_agent)
             if value < best:
                 best = value
