@@ -1,0 +1,20 @@
+===============================================================================================
+BANG KET QUA THUC NGHIEM SO SANH MINIMAX VA ALPHA-BETA PRUNING (NHOM 07)
+===============================================================================================
+Map                        | Depth | Action | Value    | MM Nodes | AB Nodes | Pruning %  | Speedup 
+-----------------------------------------------------------------------------------------------
+adversarial_single_ghost_corridor | 1     | RIGHT  | -286     | 8        | 8        | 0.0      % | 8.22   x
+adversarial_single_ghost_corridor | 2     | RIGHT  | -270     | 60       | 51       | 15.0     % | 3.57   x
+adversarial_single_ghost_corridor | 3     | RIGHT  | -290     | 411      | 276      | 32.8     % | 1.8    x
+adversarial_two_ghosts_pincer | 1     | LEFT   | -204     | 26       | 16       | 38.5     % | 4.78   x
+adversarial_two_ghosts_pincer | 2     | LEFT   | -184     | 426      | 185      | 56.6     % | 2.04   x
+adversarial_two_ghosts_pincer | 3     | LEFT   | -166     | 4986     | 1586     | 68.2     % | 2.69   x
+adversarial_dead_end_trap  | 1     | DOWN   | -19964   | 6        | 5        | 16.7     % | 5.0    x
+adversarial_dead_end_trap  | 2     | DOWN   | -19964   | 30       | 17       | 43.3     % | 2.56   x
+adversarial_dead_end_trap  | 3     | DOWN   | -19964   | 134      | 44       | 67.2     % | 1.33   x
+test_map (2 Ghosts)        | 1     | RIGHT  | -404     | 20       | 20       | 0.0      % | 4.33   x
+test_map (2 Ghosts)        | 2     | RIGHT  | -386     | 212      | 182      | 14.2     % | 1.68   x
+test_map (2 Ghosts)        | 3     | DOWN   | -370     | 2507     | 910      | 63.7     % | 2.48   x
+large_map (3 Ghosts)       | 1     | DOWN   | -424     | 24       | 16       | 33.3     % | 12.67  x
+large_map (3 Ghosts)       | 2     | DOWN   | -404     | 384      | 152      | 60.4     % | 5.77   x
+large_map (3 Ghosts)       | 3     | DOWN   | -384     | 6684     | 1200     | 82.0     % | 5.53   x

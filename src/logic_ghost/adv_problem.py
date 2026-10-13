@@ -131,31 +131,55 @@ class AdvProblem:
         # Khoảng cách mê cung thực tế từ Pacman đến mục tiêu
         dist_goal = self.goal_distance_map.get(state.pacman_position, 999)
 
-        # Điểm cơ sở theo khoảng cách tới mục tiêu
-        score = -dist_goal * 20
+        # Điểm cơ sở theo khoảng cách tới mục tiêu (trọng số cao để ưu tiên tiến về đích)
+        score = -dist_goal * 40
 
         # Tính toán ảnh hưởng của Ghost nếu có Ghost trên bản đồ
         if len(state.ghost_positions) > 0:
             min_ghost_dist = float("inf")
+            blocking_dist = float("inf")
+            chasing_dist = float("inf")
+
             for ghost_pos in state.ghost_positions:
                 dist = self.get_maze_distance(state.pacman_position, ghost_pos)
                 if dist < min_ghost_dist:
                     min_ghost_dist = dist
+                ghost_to_goal = self.goal_distance_map.get(ghost_pos, 999)
+                if ghost_to_goal <= dist_goal:
+                    if dist < blocking_dist:
+                        blocking_dist = dist
+                else:
+                    if dist < chasing_dist:
+                        chasing_dist = dist
 
-            # Phạt Ghost áp sát phi tuyến dựa trên khoảng cách mê cung thực tế
+            # 1. Nguy cơ va chạm trực tiếp trong bước kế tiếp (khoảng cách <= 1)
             if min_ghost_dist <= 1:
-                score -= 50000
-            elif min_ghost_dist == 2:
-                score -= 10000
-            elif min_ghost_dist == 3:
-                score -= 2000
-            else:
-                score += min(min_ghost_dist, 8) * 2
+                # Kiểm tra xem Pacman có lối thoát hợp lệ hướng về đích không
+                has_escape = False
+                for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    nr, nc = state.pacman_position[0] + dr, state.pacman_position[1] + dc
+                    if 0 <= nr < len(self.game_map) and 0 <= nc < len(self.game_map[0]):
+                        if self.game_map[nr][nc] != "#" and (nr, nc) not in state.ghost_positions:
+                            if self.goal_distance_map.get((nr, nc), 999) < dist_goal:
+                                has_escape = True
+                                break
+                if not has_escape:
+                    score -= 50000
+                else:
+                    # Pacman đang dẫn trước và có lối thoát mở về phía đích -> chỉ trừ nhẹ để không hoảng loạn quay đầu
+                    score -= 500
 
-            # Phạt ngõ cụt khi có Ghost ở cự ly gần
-            exits = self._count_exits(state.pacman_position)
-            if exits <= 1 and min_ghost_dist <= 3:
-                score -= 20000
+            # 2. Ghost chặn trước mặt / ở gần Goal hơn Pacman (nguy cơ bị chặn họng)
+            if blocking_dist == 2:
+                score -= 15000
+            elif blocking_dist == 3:
+                score -= 4000
+            elif blocking_dist == 4:
+                score -= 1000
+
+            # 3. Ghost bám đuổi phía sau (Pacman đang dẫn trước trong cuộc đua về đích)
+            if chasing_dist >= 2:
+                score += min(chasing_dist, 6) * 10
 
         return score
 
