@@ -92,19 +92,24 @@ class GameController:
             self.load_current_map()
 
     def _scan_maps(self):
-        """Quét tất cả các file bản đồ trong thư mục maps/"""
+        """Quét tất cả các file bản đồ trong thư mục maps/ (loại bỏ các file lỗi dành riêng cho unit test)"""
         maps = glob.glob("maps/*.txt")
         # Chuẩn hóa dấu gạch chéo
-        maps = [m.replace("\\", "/") for m in maps]
-        # Đưa test_map.txt và adversarial_small.txt lên đầu nếu có
+        maps = [m.replace("\\", "/") for m in maps if not m.endswith("bad_map.txt")]
+        # Đưa các map tiêu chuẩn và đặc trưng lên đầu danh sách
         preferred = [
+            "maps/single_goal_small_open.txt",
+            "maps/single_goal_dense_maze.txt",
+            "maps/multi_food_four_corners.txt",
+            "maps/multi_food_and_final_goal.txt",
+            "maps/adversarial_single_ghost_corridor.txt",
+            "maps/adversarial_two_ghosts_pincer.txt",
             "maps/test_map.txt",
             "maps/adversarial_small.txt",
             "maps/multi_goal_test.txt",
             "maps/large_map.txt",
             "maps/dead_end_maze.txt",
             "maps/no_solution_map.txt",
-            "maps/bad_map.txt",
         ]
         sorted_maps = []
         for p in preferred:
@@ -252,10 +257,11 @@ class GameController:
             self.is_stepping = True
             self._step_trigger.set()
 
-    def _plan_multi_food_tour(self, algo_name):
+    def _plan_multi_food_tour(self, algo_name, final_goal=None):
         """
         Lập kế hoạch ăn sạch toàn bộ thức ăn bằng cách tìm đường liên tiếp tới viên gần nhất.
         Giải quyết bài toán bùng nổ tổ hợp khi số lượng food lớn (> 12).
+        Tự động loại bỏ các viên thức ăn bị Pacman bước qua trên đường đi.
         """
         remaining = set(self.foods)
         curr = self.spawn
@@ -279,8 +285,29 @@ class GameController:
                 break
             all_actions.extend(sub_acts)
             total_nodes += searcher.expanded_count
-            curr = next_food
-            remaining.remove(next_food)
+
+            # Mô phỏng từng bước đi để loại bỏ các viên thức ăn ăn được dọc đường
+            tr, tc = curr
+            for act in sub_acts:
+                if act == "UP": tr -= 1
+                elif act == "DOWN": tr += 1
+                elif act == "LEFT": tc -= 1
+                elif act == "RIGHT": tc += 1
+                remaining.discard((tr, tc))
+            curr = (tr, tc)
+
+        # Nếu có Goal cuối cùng sau khi đã ăn hết thức ăn
+        if final_goal is not None and curr != final_goal and not self._stop_event.is_set():
+            prob = PMSearchProblem(curr, final_goal, self.game_map)
+            if algo_name == "DFS": searcher = DFS(prob)
+            elif algo_name == "BFS": searcher = BFS(prob)
+            elif algo_name == "UCS": searcher = UCS(prob)
+            elif algo_name == "GREEDY": searcher = Greedy(prob)
+            else: searcher = AStar(prob)
+            sub_acts = searcher.search()
+            if sub_acts:
+                all_actions.extend(sub_acts)
+                total_nodes += searcher.expanded_count
 
         time_used = time.time() - t0
         return all_actions, total_nodes, time_used
@@ -295,11 +322,12 @@ class GameController:
             return
 
         actions = None
+        final_goal = self.goals[0] if len(self.goals) > 0 else None
 
-        # 1. Chế độ Multi-Food: Chỉ cần ăn hết toàn bộ thức ăn là chiến thắng (không bắt buộc tới goal)
+        # 1. Chế độ Multi-Food: Ăn hết toàn bộ thức ăn (và về Goal nếu có)
         if len(self.foods) > 0:
             if len(self.foods) <= 12:
-                problem = MultiGoal(self.spawn, tuple(self.foods), self.game_map, goal=None)
+                problem = MultiGoal(self.spawn, tuple(self.foods), self.game_map, goal=final_goal)
                 if self.algorithm == "DFS": searcher = DFS(problem)
                 elif self.algorithm == "BFS": searcher = BFS(problem)
                 elif self.algorithm == "UCS": searcher = UCS(problem)
@@ -314,7 +342,7 @@ class GameController:
                     self.path_cost = problem.measure_path_cost(actions)
             else:
                 self.log(f"Đang lập kế hoạch gom sạch {len(self.foods)} thức ăn với {self.algorithm}...", TEXT_MUTED)
-                actions, self.expanded_count, self.time_used = self._plan_multi_food_tour(self.algorithm)
+                actions, self.expanded_count, self.time_used = self._plan_multi_food_tour(self.algorithm, final_goal=final_goal)
                 self.path_cost = len(actions) if actions else None
 
         # 2. Chế độ Multi-Goal: Đi qua tất cả các ô Goal (G)

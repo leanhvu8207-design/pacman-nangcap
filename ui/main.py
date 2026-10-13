@@ -38,6 +38,7 @@ from ui.components import (
     MapSelector,
     ScrollableLogBox,
 )
+from ui.map_browser import MapBrowserModal
 from ui.renderer import MazeRenderer
 from ui.controller import GameController
 
@@ -68,6 +69,15 @@ class PacmanVintageUI:
         self.maze_renderer = MazeRenderer(self.maze_viewport)
         self.maze_renderer.compute_layout(self.controller.game_map)
 
+        # Khởi tạo Modal duyệt và xem trước toàn cảnh bản đồ
+        self.map_browser = MapBrowserModal(
+            (self.width, self.height),
+            self.controller.map_files,
+            self.controller.current_map_file,
+            on_select=self.on_map_browser_select
+        )
+        self.show_map_browser = False
+
         # Khởi tạo các thành phần giao diện tương tác chuột
         self._init_ui_components()
 
@@ -80,7 +90,8 @@ class PacmanVintageUI:
             pygame.Rect(812, 98, 420, 28),
             self.controller.map_files,
             initial_idx=self.controller.map_files.index(self.controller.current_map_file) if self.controller.current_map_file in self.controller.map_files else 0,
-            on_change=self.on_map_changed
+            on_change=self.on_map_changed,
+            on_open_browser=self.open_map_browser
         )
 
         # 2. Algorithm Tabs
@@ -196,9 +207,28 @@ class PacmanVintageUI:
         elif self.controller.status == "PAUSED":
             self.controller.resume()
 
+    def open_map_browser(self):
+        """Mở modal xem trước và duyệt bản đồ toàn cảnh"""
+        self.show_map_browser = True
+        if self.controller.current_map_file:
+            self.map_browser.selected_map = self.controller.current_map_file
+            self.map_browser._load_map_details(self.controller.current_map_file)
+
+    def close_map_browser(self):
+        """Đóng modal xem trước bản đồ"""
+        self.show_map_browser = False
+
+    def on_map_browser_select(self, new_map_path):
+        """Khi người dùng xác nhận chọn bản đồ trong modal"""
+        self.map_selector.set_map(new_map_path)
+        self.on_map_changed(new_map_path)
+        self.show_map_browser = False
+
     def on_map_changed(self, new_map_path):
         self.controller.set_map_file(new_map_path)
         self.maze_renderer.compute_layout(self.controller.game_map)
+        if hasattr(self, "map_browser"):
+            self.map_browser.selected_map = new_map_path
 
     def on_algorithm_changed(self, algo_name):
         self.controller.set_algorithm(algo_name)
@@ -230,9 +260,18 @@ class PacmanVintageUI:
                 self.controller.stop_execution()
                 return
 
+            # Nếu Modal Map Browser đang mở, chuyển tiếp sự kiện và chặn tương tác phía dưới
+            if self.show_map_browser:
+                res = self.map_browser.handle_event(event)
+                if res in ["CLOSE", "SELECT"]:
+                    self.close_map_browser()
+                continue
+
             # Phím tắt bàn phím tiện lợi
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_m:
+                    self.open_map_browser()
+                elif event.key == pygame.K_SPACE:
                     self.toggle_pause()
                 elif event.key == pygame.K_r:
                     self.controller.reset_state()
@@ -306,6 +345,10 @@ class PacmanVintageUI:
         self._draw_metrics_panel()
         self._draw_activity_log_panel()
 
+        # 5. Modal Bộ duyệt và xem trước toàn cảnh bản đồ (nếu đang mở)
+        if self.show_map_browser:
+            self.map_browser.draw(self.screen)
+
         pygame.display.flip()
 
     def _draw_header(self):
@@ -337,7 +380,7 @@ class PacmanVintageUI:
 
         # Phím tắt gợi ý phía góc phải
         font_hint = get_font("small")
-        hint_surf = font_hint.render("[Enter: Start  |  Space: Pause  |  S: Step  |  R: Reset]", True, (130, 145, 175))
+        hint_surf = font_hint.render("[M: Maps  |  Enter: Start  |  Space: Pause  |  S: Step  |  R: Reset]", True, (130, 145, 175))
         self.screen.blit(hint_surf, (self.width - hint_surf.get_width() - 36, 29))
 
     def _draw_control_panel(self):

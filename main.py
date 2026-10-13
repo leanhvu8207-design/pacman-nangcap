@@ -1,5 +1,6 @@
 import sys
 import time
+import argparse
 from collections import deque
 
 from src.utils.map_loader import load_map
@@ -41,9 +42,10 @@ def find_nearest_food(pos, food_set, game_map):
     return min(food_set, key=lambda f: abs(pos[0] - f[0]) + abs(pos[1] - f[1]))
 
 
-def plan_multi_food_path(algo_name, spawn, foods, game_map):
+def plan_multi_food_path(algo_name, spawn, foods, game_map, final_goal=None):
     """
     Lap ke hoach an sach toan bo thuc an bang cach tim duong lien tiep toi vien gan nhat.
+    Tu dong loai bo cac vien thuc an ma Pacman di qua tren duong di.
     """
     remaining = set(foods)
     curr = spawn
@@ -65,11 +67,33 @@ def plan_multi_food_path(algo_name, spawn, foods, game_map):
             break
         all_actions.extend(sub_acts)
         total_nodes += searcher.expanded_count
-        curr = next_food
-        remaining.remove(next_food)
+
+        # Mo phong tung buoc de loai bo cac vien thuc an bi an doc duong
+        tr, tc = curr
+        for act in sub_acts:
+            if act == "UP": tr -= 1
+            elif act == "DOWN": tr += 1
+            elif act == "LEFT": tc -= 1
+            elif act == "RIGHT": tc += 1
+            remaining.discard((tr, tc))
+        curr = (tr, tc)
+
+    # Neu co Goal cuoi cung sau khi da an het thuc an
+    if final_goal is not None and curr != final_goal:
+        prob = PMSearchProblem(curr, final_goal, game_map)
+        if algo_name == "DFS": searcher = DFS(prob)
+        elif algo_name == "BFS": searcher = BFS(prob)
+        elif algo_name == "UCS": searcher = UCS(prob)
+        elif algo_name == "GREEDY": searcher = Greedy(prob)
+        else: searcher = AStar(prob)
+        sub_acts = searcher.search()
+        if sub_acts:
+            all_actions.extend(sub_acts)
+            total_nodes += searcher.expanded_count
 
     time_used = time.time() - t0
     return all_actions, total_nodes, time_used
+
 
 
 # ham in ban do ra terminal cho de nhin
@@ -191,11 +215,13 @@ def main():
         time_cost = 0.0
         path_cost = 0
 
-        # 1. Che do Multi-Food: An sach toan bo thuc an la chien thang (khong bat buoc toi goal)
+        # 1. Che do Multi-Food: An het toan bo thuc an (va ve Goal neu co)
         if len(foods) > 0:
-            print(f"\n[Che do Multi-Food] An het toan bo {len(foods)} vien Food (.) la chien thang!")
+            final_goal = goals[0] if len(goals) > 0 else None
+            msg_goal = f" va ve Goal tai {final_goal}" if final_goal else ""
+            print(f"\n[Che do Multi-Food] An het toan bo {len(foods)} vien Food (.){msg_goal} la chien thang!")
             if len(foods) <= 12:
-                problem = MultiGoal(spawn, tuple(foods), game_map, goal=None)
+                problem = MultiGoal(spawn, tuple(foods), game_map, goal=final_goal)
                 if thuat_toan == "1": searcher = DFS(problem)
                 elif thuat_toan == "2": searcher = BFS(problem)
                 elif thuat_toan == "3": searcher = UCS(problem)
@@ -210,7 +236,7 @@ def main():
                     path_cost = problem.measure_path_cost(actions)
             else:
                 print(f"\nDang lap ke hoach an sach {len(foods)} vien Food (.) voi {ten_tt}...")
-                actions, exp_count, time_cost = plan_multi_food_path(ten_tt, spawn, foods, game_map)
+                actions, exp_count, time_cost = plan_multi_food_path(ten_tt, spawn, foods, game_map, final_goal=final_goal)
                 path_cost = len(actions) if actions else 0
 
         # 2. Che do Multi-Goal: Di qua tat ca cac Goal (G)
@@ -401,10 +427,175 @@ def main():
         print("Lua chon khong hop le!")
 
 
+def run_cli(map_path, algo_name, depth=2, mode="match"):
+    """
+    Chay thuat toan truc tiep tu command-line khong can tuong tac ban phim.
+    Ho tro kiem thu tu dong va tai tao ket qua bao cao.
+    """
+    game_map = load_map(map_path)
+    if game_map is None:
+        print(f"[LOI] Khong the load duoc map tu file: {map_path}")
+        return
+
+    spawn, goals, ghosts, foods = get_map_info(game_map, return_foods=True)
+    algo = algo_name.upper()
+    if algo == "ASTAR": algo = "A*"
+    elif algo in ["ALPHABETA", "ALPHA_BETA"]: algo = "ALPHA-BETA"
+
+    if algo in ["DFS", "BFS", "UCS", "GREEDY", "A*"]:
+        if len(goals) == 0 and len(foods) == 0:
+            print("[LOI] Map nay khong co Goal hay Food nao de tim duong!")
+            return
+
+        final_goal = goals[0] if len(goals) > 0 else None
+        if len(foods) > 0:
+            if len(foods) <= 12:
+                problem = MultiGoal(spawn, tuple(foods), game_map, goal=final_goal)
+                if algo == "DFS": searcher = DFS(problem)
+                elif algo == "BFS": searcher = BFS(problem)
+                elif algo == "UCS": searcher = UCS(problem)
+                elif algo == "GREEDY": searcher = Greedy(problem)
+                else: searcher = AStar(problem)
+                actions = searcher.search()
+                exp_count = searcher.expanded_count
+                time_cost = searcher.time_used
+                path_cost = problem.measure_path_cost(actions) if actions else 0
+            else:
+                actions, exp_count, time_cost = plan_multi_food_path(algo, spawn, foods, game_map, final_goal=final_goal)
+                path_cost = len(actions) if actions else 0
+        elif len(goals) > 1:
+            problem = MultiGoal(spawn, tuple(goals), game_map, goal=None)
+            if algo == "DFS": searcher = DFS(problem)
+            elif algo == "BFS": searcher = BFS(problem)
+            elif algo == "UCS": searcher = UCS(problem)
+            elif algo == "GREEDY": searcher = Greedy(problem)
+            else: searcher = AStar(problem)
+            actions = searcher.search()
+            exp_count = searcher.expanded_count
+            time_cost = searcher.time_used
+            path_cost = problem.measure_path_cost(actions) if actions else 0
+        else:
+            problem = PMSearchProblem(spawn, goals[0], game_map)
+            if algo == "DFS": searcher = DFS(problem)
+            elif algo == "BFS": searcher = BFS(problem)
+            elif algo == "UCS": searcher = UCS(problem)
+            elif algo == "GREEDY": searcher = Greedy(problem)
+            else: searcher = AStar(problem)
+            actions = searcher.search()
+            exp_count = searcher.expanded_count
+            time_cost = searcher.time_used
+            path_cost = problem.measure_path_cost(actions) if actions else 0
+
+        print("\n=== KET QUA TIM KIEM (CLI) ===")
+        print(f"Map: {map_path}")
+        print(f"Thuat toan: {algo}")
+        if actions is not None:
+            print(f"Trang thai: Tim thay duong di thanh cong!")
+            print(f"So buoc di: {len(actions)}")
+            print(f"Tong chi phi (Path Cost): {path_cost}")
+            print(f"Chuoi hanh dong: {actions}")
+        else:
+            print(f"Trang thai: Khong tim thay duong di toi dich!")
+        print(f"So node da duyet (expanded_count): {exp_count}")
+        print(f"Thoi gian chay (time_used): {round(time_cost, 6)} giay")
+
+    elif algo in ["MINIMAX", "ALPHA-BETA"]:
+        if len(goals) == 0 and len(foods) == 0:
+            print("[LOI] Map doi khang can co it nhat 1 Goal dich hoac Food!")
+            return
+
+        remaining_goals = list(goals)
+        if len(remaining_goals) > 0:
+            target = min(remaining_goals, key=lambda g: abs(spawn[0] - g[0]) + abs(spawn[1] - g[1]))
+        elif len(foods) > 0:
+            target = find_nearest_food(spawn, set(foods), game_map)
+        else:
+            target = None
+
+        if mode == "step":
+            prob = AdvProblem(spawn, ghosts, target, game_map)
+            ai = Minimax(prob, depth) if algo == "MINIMAX" else AlphaBeta(prob, depth)
+            action = ai.search()
+            print("\n=== KET QUA QUYET DINH BUOC DAU (CLI) ===")
+            print(f"Map: {map_path}")
+            print(f"Thuat toan: {algo}")
+            print(f"Do sau (depth): {depth}")
+            print(f"Hanh dong tot nhat: {action}")
+            print(f"Gia tri danh gia (last_value): {ai.last_value}")
+            print(f"So node da duyet: {ai.expanded_count}")
+            print(f"Thoi gian tinh: {round(ai.time_used, 6)} giay")
+        else:
+            state = GameState(spawn, ghosts.copy(), set(foods), 0, game_map)
+            buoc = 0
+            tong_nodes = 0
+            tong_time = 0.0
+            lich_su_actions = []
+            lich_su_positions = [state.pacman_position]
+            max_steps = max(100, len(foods) * 4 if len(foods) > 0 else 60)
+
+            while buoc < max_steps:
+                if len(remaining_goals) > 0:
+                    target = min(remaining_goals, key=lambda g: abs(state.pacman_position[0] - g[0]) + abs(state.pacman_position[1] - g[1]))
+                elif len(state.food) > 0:
+                    target = find_nearest_food(state.pacman_position, state.food, game_map)
+                else:
+                    target = None
+
+                if target is None:
+                    state.status = "WIN"
+                    break
+
+                buoc += 1
+                prob = AdvProblem(state.pacman_position, state.ghost_positions, target, game_map)
+                recent = lich_su_positions[-8:]
+                ai = Minimax(prob, depth, recent_positions=recent) if algo == "MINIMAX" else AlphaBeta(prob, depth, recent_positions=recent)
+                act = ai.search()
+                tong_nodes += ai.expanded_count
+                tong_time += ai.time_used
+                if act is None:
+                    break
+                lich_su_actions.append(act)
+                state = state.step(act, target)
+                lich_su_positions.append(state.pacman_position)
+                if state.pacman_position in remaining_goals:
+                    remaining_goals.remove(state.pacman_position)
+                    state.score += 20
+                if state.status == "LOSE":
+                    break
+                if len(remaining_goals) == 0 and len(state.food) == 0:
+                    state.status = "WIN"
+                    break
+                else:
+                    state.status = "PLAYING"
+
+            print("\n=== TONG KET MO PHONG DOI KHANG (CLI) ===")
+            print(f"Map: {map_path}")
+            print(f"Thuat toan: {algo}")
+            print(f"Do sau (depth): {depth}")
+            print(f"Ket qua: {state.status}")
+            print(f"Tong so buoc di: {len(lich_su_actions)}")
+            print(f"Chuoi hanh dong: {lich_su_actions}")
+            print(f"Tong so node da mo rong: {tong_nodes}")
+            print(f"Tong thoi gian tinh toan AI: {round(tong_time, 5)} giay")
+    else:
+        print(f"[LOI] Thuat toan khong hop le: {algo_name}")
+
+
 if __name__ == "__main__":
-    if "--ui" in sys.argv:
+    parser = argparse.ArgumentParser(description="Pacman AI Search - Nhom 07")
+    parser.add_argument("--ui", action="store_true", help="Chay giao dien do hoa Vintage Arcade (Pygame)")
+    parser.add_argument("--map", type=str, default=None, help="Duong dan toi file ban do .txt (vd: maps/test_map.txt)")
+    parser.add_argument("--algo", type=str, default=None, help="Thuat toan: DFS, BFS, UCS, GREEDY, ASTAR, MINIMAX, ALPHABETA")
+    parser.add_argument("--depth", type=int, default=2, help="Do sau tim kiem cho Minimax / Alpha-Beta (mac dinh: 2)")
+    parser.add_argument("--mode", type=str, default="match", choices=["step", "match"], help="Che do doi khang: step (1 buoc) hoac match (mo phong tran)")
+
+    args = parser.parse_args()
+
+    if args.ui:
         from ui.main import run_ui
         run_ui()
+    elif args.map and args.algo:
+        run_cli(args.map, args.algo, args.depth, args.mode)
     else:
         main()
 

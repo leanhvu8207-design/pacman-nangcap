@@ -9,6 +9,7 @@ class MultiGoal:
         self.goal = goal
         self.cost_fn = cost_fn
         self.heuristic_fn = heuristic_fn
+        self._mst_cache = {}
     
     def get_pacman_spawn(self):
         return GameState(self.pacman_spawn, [], set(self.food),
@@ -44,28 +45,77 @@ class MultiGoal:
                 total_cost += self.cost_fn(curr.pacman_position)
         return total_cost
     
+    def _compute_mst_cost(self, foods):
+        """
+        Tính chi phí Cây khung nhỏ nhất (MST) qua danh sách các điểm thức ăn bằng Prim.
+        """
+        n = len(foods)
+        if n <= 1:
+            return 0
+        if n == 2:
+            return abs(foods[0][0] - foods[1][0]) + abs(foods[0][1] - foods[1][1])
+
+        in_tree = [False] * n
+        in_tree[0] = True
+        min_dist = [abs(foods[0][0] - foods[i][0]) + abs(foods[0][1] - foods[i][1]) for i in range(n)]
+        total_cost = 0
+
+        for _ in range(n - 1):
+            best_idx = -1
+            best_val = float("inf")
+            for i in range(n):
+                if not in_tree[i] and min_dist[i] < best_val:
+                    best_val = min_dist[i]
+                    best_idx = i
+
+            if best_idx == -1:
+                break
+
+            in_tree[best_idx] = True
+            total_cost += best_val
+
+            for i in range(n):
+                if not in_tree[i]:
+                    d = abs(foods[best_idx][0] - foods[i][0]) + abs(foods[best_idx][1] - foods[i][1])
+                    if d < min_dist[i]:
+                        min_dist[i] = d
+
+        return total_cost
+
     def heuristic(self, state: GameState):
+        """
+        Heuristic tối ưu Admissible và Consistent cho bài toán nhiều mục tiêu:
+        h(state) = min_dist(Pacman, food) + MST_cost(remaining_foods) + min_dist(food, Goal)
+        """
         if self.heuristic_fn is not None:
             return self.heuristic_fn(state)
         if self.reached_target(state):
             return 0
-        
+
         pm_r, pm_c = state.pacman_position
 
-        # Nếu đã ăn hết thức ăn nhưng chưa tới đích Goal G
+        # Nếu đã ăn hết thức ăn nhưng có ô Goal (G) cuối cùng
         if len(state.food) == 0:
             if self.goal is not None:
                 gr, gc = self.goal
                 return abs(pm_r - gr) + abs(pm_c - gc)
             return 0
-        
-        # Nếu vẫn còn thức ăn
-        max_dist_to_food = max(abs(pm_r - fr) + abs(pm_c - fc) for fr, fc in state.food)
-        
-        # Nếu có thêm đích Goal G sau khi ăn hết food
+
+        # Khoảng cách từ Pacman tới viên thức ăn gần nhất
+        min_dist_to_food = min(abs(pm_r - fr) + abs(pm_c - fc) for fr, fc in state.food)
+
+        # Chi phí cây khung nhỏ nhất (MST) kết nối các viên thức ăn còn lại
+        food_key = frozenset(state.food)
+        if food_key not in self._mst_cache:
+            self._mst_cache[food_key] = self._compute_mst_cost(list(state.food))
+        mst_cost = self._mst_cache[food_key]
+
+        total_h = min_dist_to_food + mst_cost
+
+        # Nếu có Goal cuối cùng sau khi gom hết thức ăn
         if self.goal is not None:
             gr, gc = self.goal
-            dist_to_goal = abs(pm_r - gr) + abs(pm_c - gc)
-            return max(max_dist_to_food, dist_to_goal)
+            min_food_to_goal = min(abs(fr - gr) + abs(fc - gc) for fr, fc in state.food)
+            total_h += min_food_to_goal
 
-        return max_dist_to_food
+        return total_h

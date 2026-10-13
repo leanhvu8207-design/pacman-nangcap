@@ -110,11 +110,19 @@ def init_fonts():
         except Exception:
             _fonts[key] = pygame.font.Font(None, size)
 
+_fallback_font = None
+
 def get_font(key):
-    """Lấy font chữ theo kích cỡ"""
+    """Lấy font chữ theo kích cỡ (được cache 100%, không cấp phát lại trong render loop)"""
+    global _fallback_font
     if not _fonts:
         init_fonts()
-    return _fonts.get(key, pygame.font.Font(None, 14))
+    font = _fonts.get(key)
+    if font is not None:
+        return font
+    if _fallback_font is None:
+        _fallback_font = pygame.font.Font(None, 14)
+    return _fallback_font
 
 
 # ==============================================================================

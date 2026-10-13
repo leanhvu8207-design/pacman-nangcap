@@ -208,16 +208,19 @@ class NumberStepper:
 
 
 class MapSelector:
-    """Bộ chọn bản đồ có mũi tên điều hướng và tên file hiện tại"""
+    """Bộ chọn bản đồ có mũi tên điều hướng, nút xem trước toàn cảnh (Preview) và tên file hiện tại"""
 
-    def __init__(self, rect, map_list, initial_idx=0, on_change=None):
+    def __init__(self, rect, map_list, initial_idx=0, on_change=None, on_open_browser=None):
         self.rect = pygame.Rect(rect)
         self.map_list = map_list
         self.current_idx = initial_idx if 0 <= initial_idx < len(map_list) else 0
         self.on_change = on_change
+        self.on_open_browser = on_open_browser
 
-        btn_w = 30
+        btn_w = 26
         btn_h = self.rect.height
+        prev_btn_w = 84
+
         self.btn_prev = Button(
             pygame.Rect(self.rect.x, self.rect.y, btn_w, btn_h),
             "<",
@@ -225,11 +228,29 @@ class MapSelector:
             font_key="header"
         )
         self.btn_next = Button(
-            pygame.Rect(self.rect.right - btn_w, self.rect.y, btn_w, btn_h),
+            pygame.Rect(self.rect.right - prev_btn_w - 4 - btn_w, self.rect.y, btn_w, btn_h),
             ">",
             on_click=self.next_map,
             font_key="header"
         )
+        self.btn_preview = Button(
+            pygame.Rect(self.rect.right - prev_btn_w, self.rect.y, prev_btn_w, btn_h),
+            "👁 XEM MAP",
+            on_click=self.open_browser,
+            variant="tab",
+            font_key="small"
+        )
+
+        self.mid_rect = pygame.Rect(
+            self.btn_prev.rect.right + 4,
+            self.rect.y,
+            self.btn_next.rect.left - self.btn_prev.rect.right - 8,
+            self.rect.height
+        )
+
+    def open_browser(self):
+        if self.on_open_browser:
+            self.on_open_browser()
 
     def get_current_map(self):
         if not self.map_list:
@@ -253,29 +274,35 @@ class MapSelector:
             self.current_idx = self.map_list.index(map_path)
 
     def handle_event(self, event):
-        return self.btn_prev.handle_event(event) or self.btn_next.handle_event(event)
+        hit = self.btn_prev.handle_event(event) or self.btn_next.handle_event(event) or self.btn_preview.handle_event(event)
+        if not hit and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.mid_rect.collidepoint(event.pos):
+                self.open_browser()
+                return True
+        return hit
 
     def draw(self, surface):
-        # Ô hiển thị tên file
-        mid_rect = pygame.Rect(
-            self.btn_prev.rect.right + 4,
-            self.rect.y,
-            self.btn_next.rect.left - self.btn_prev.rect.right - 8,
-            self.rect.height
-        )
-        pygame.draw.rect(surface, BG_PANEL_ALT, mid_rect, border_radius=4)
-        pygame.draw.rect(surface, BORDER_COLOR, mid_rect, width=1, border_radius=4)
+        mouse_pos = pygame.mouse.get_pos()
+        is_hover = self.mid_rect.collidepoint(mouse_pos)
+
+        # Hộp hiển thị tên file
+        box_bg = (24, 30, 48) if is_hover else BG_PANEL_ALT
+        box_border = BORDER_HIGHLIGHT if is_hover else BORDER_COLOR
+        pygame.draw.rect(surface, box_bg, self.mid_rect, border_radius=4)
+        pygame.draw.rect(surface, box_border, self.mid_rect, width=1, border_radius=4)
 
         cur_map = self.get_current_map()
         name_only = cur_map.split("/")[-1].split("\\")[-1] if cur_map else "No Map"
 
         font = get_font("subtitle")
-        rendered = font.render(name_only, True, TEXT_OLD_PAPER)
-        rendered_rect = rendered.get_rect(center=mid_rect.center)
+        text_col = (255, 214, 10) if is_hover else TEXT_OLD_PAPER
+        rendered = font.render(name_only, True, text_col)
+        rendered_rect = rendered.get_rect(center=self.mid_rect.center)
         surface.blit(rendered, rendered_rect)
 
         self.btn_prev.draw(surface)
         self.btn_next.draw(surface)
+        self.btn_preview.draw(surface)
 
 
 class ScrollableLogBox:
