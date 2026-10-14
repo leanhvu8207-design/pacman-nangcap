@@ -143,28 +143,28 @@ class PacmanVintageUI:
         act_gap = 7
         self.btn_start = Button(
             pygame.Rect(812 + 0 * (act_w + act_gap), act_y, act_w, 32),
-            "▶ START",
+            "START",
             on_click=self.controller.start,
             variant="start",
             font_key="header"
         )
         self.btn_pause = Button(
             pygame.Rect(812 + 1 * (act_w + act_gap), act_y, act_w, 32),
-            "⏸ PAUSE",
+            "PAUSE",
             on_click=self.toggle_pause,
             variant="pause",
             font_key="header"
         )
         self.btn_step = Button(
             pygame.Rect(812 + 2 * (act_w + act_gap), act_y, act_w, 32),
-            "⏭ STEP",
+            "STEP",
             on_click=self.controller.step_forward,
             variant="default",
             font_key="header"
         )
         self.btn_reset = Button(
             pygame.Rect(812 + 3 * (act_w + act_gap), act_y, act_w, 32),
-            "↺ RESET",
+            "RESET",
             on_click=self.controller.reset_state,
             variant="stop",
             font_key="header"
@@ -376,10 +376,10 @@ class PacmanVintageUI:
             self.screen.blit(desc_surf, desc_surf.get_rect(center=info_rect.center))
 
         if self.controller.status == "PAUSED":
-            self.btn_pause.text = "▶ RESUME"
+            self.btn_pause.text = "RESUME"
             self.btn_pause.variant = "start"
         else:
-            self.btn_pause.text = "⏸ PAUSE"
+            self.btn_pause.text = "PAUSE"
             self.btn_pause.variant = "pause"
 
         self.btn_start.draw(self.screen)

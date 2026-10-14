@@ -108,6 +108,22 @@ class MazeRenderer:
                     if ts >= 20:
                         inner_rect = tile_rect.inflate(-4, -4)
                         pygame.draw.rect(surface, WALL_INNER, inner_rect, width=1)
+                elif char == "~":
+                    # Địa hình Nước (chi phí di chuyển = 2)
+                    pygame.draw.rect(surface, (20, 52, 92), tile_rect)
+                    pygame.draw.rect(surface, (38, 88, 145), tile_rect, width=1)
+                    if ts >= 18:
+                        font_terr = get_font("small")
+                        lbl = font_terr.render("~", True, (100, 175, 235))
+                        surface.blit(lbl, lbl.get_rect(center=tile_rect.center))
+                elif char == "S":
+                    # Địa hình Bùn lầy (chi phí di chuyển = 3)
+                    pygame.draw.rect(surface, (62, 42, 22), tile_rect)
+                    pygame.draw.rect(surface, (105, 75, 42), tile_rect, width=1)
+                    if ts >= 18:
+                        font_terr = get_font("small")
+                        lbl = font_terr.render("S", True, (185, 140, 85))
+                        surface.blit(lbl, lbl.get_rect(center=tile_rect.center))
                 else:
                     pygame.draw.rect(surface, (15, 17, 27), tile_rect)
 

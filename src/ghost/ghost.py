@@ -1,118 +1,178 @@
+"""Tác tử Ghost tìm đường BFS truy đuổi Pacman."""
+
 from collections import deque
+
 
 class Ghost:
     def __init__(self, position):
         self.position = position
 
     def get_next_position(self, action, game_map):
-        r, c = self.position
-        if action == "UP":
-            r -= 1
-        elif action == "DOWN":
-            r += 1
-        elif action == "LEFT":
-            c -= 1
-        elif action == "RIGHT":
-            c += 1
+        curr_row = self.position[0]
+        curr_col = self.position[1]
 
-        new_position = (r, c)
-        if r < 0 or r >= len(game_map):
-            return None
-        if c < 0 or c >= len(game_map[r]):
-            return None
-        if game_map[r][c] == "#":
+        if action == 'UP':
+            next_row = curr_row - 1
+            next_col = curr_col
+        elif action == 'DOWN':
+            next_row = curr_row + 1
+            next_col = curr_col
+        elif action == 'LEFT':
+            next_row = curr_row
+            next_col = curr_col - 1
+        elif action == 'RIGHT':
+            next_row = curr_row
+            next_col = curr_col + 1
+        else:
             return None
 
-        return new_position
+        if next_row < 0 or next_row >= len(game_map):
+            return None
+        if next_col < 0 or next_col >= len(game_map[next_row]):
+            return None
+        if game_map[next_row][next_col] == '#':
+            return None
+
+        valid_new_position = (next_row, next_col)
+        return valid_new_position
 
     def get_valid_actions(self, game_map):
-        actions = ["UP", "DOWN", "RIGHT", "LEFT"]
+        all_actions = ['UP', 'DOWN', 'RIGHT', 'LEFT']
         valid_actions = []
 
-        for action in actions:
-            next_position = self.get_next_position(action, game_map)
-            if next_position is not None:
+        for action in all_actions:
+            next_pos = self.get_next_position(action, game_map)
+            if next_pos is not None:
                 valid_actions.append(action)
 
         return valid_actions
 
     def choose_action(self, game_map, pacman_position, other_ghost_positions=None):
-        """
-        Tìm nước đi thông minh để dí theo Pacman:
-        - Sử dụng thuật toán BFS tìm đường đi ngắn nhất thực tế trong mê cung tới Pacman.
-        - Tránh hoàn toàn hiện tượng dao động lặp chu kỳ do bị tường cản.
-        - Tránh đè lên vị trí của các Ghost khác (Ghost Collision Avoidance), giúp ma không bị nhập vào nhau.
-        """
         valid_actions = self.get_valid_actions(game_map)
-        if not valid_actions:
+        if len(valid_actions) == 0:
             return None
 
         if self.position == pacman_position:
             return valid_actions[0]
 
-        other_ghosts = set(other_ghost_positions) if other_ghost_positions else set()
+        if other_ghost_positions is not None:
+            other_ghosts = set(other_ghost_positions)
+        else:
+            other_ghosts = set()
 
-        safe_actions = [
-            act for act in valid_actions
-            if self.get_next_position(act, game_map) not in other_ghosts
-        ]
-        candidate_actions = safe_actions if safe_actions else valid_actions
+        safe_actions = []
+        for act in valid_actions:
+            next_pos = self.get_next_position(act, game_map)
+            if next_pos not in other_ghosts:
+                safe_actions.append(act)
 
-        queue = deque([(self.position, None)])
-        visited = {self.position} | other_ghosts
+        if len(safe_actions) > 0:
+            candidate_actions = safe_actions
+        else:
+            candidate_actions = valid_actions
+
+        queue = deque()
+        initial_element = (self.position, None)
+        queue.append(initial_element)
+
+        visited = set()
+        visited.add(self.position)
+        for g_pos in other_ghosts:
+            visited.add(g_pos)
+
         first_step_to_target = None
+        move_directions = [('UP', -1, 0), ('DOWN', 1, 0), ('LEFT', 0, -1), ('RIGHT', 0, 1)]
 
-        directions = [("UP", (-1, 0)), ("DOWN", (1, 0)), ("LEFT", (0, -1)), ("RIGHT", (0, 1))]
+        while len(queue) > 0:
+            current_item = queue.popleft()
+            curr_pos = current_item[0]
+            first_action_taken = current_item[1]
 
-        while queue:
-            curr_pos, first_act = queue.popleft()
             if curr_pos == pacman_position:
-                first_step_to_target = first_act
+                first_step_to_target = first_action_taken
                 break
 
-            for act, (dr, dc) in directions:
-                nr = curr_pos[0] + dr
-                nc = curr_pos[1] + dc
-                if 0 <= nr < len(game_map) and 0 <= nc < len(game_map[nr]):
-                    if game_map[nr][nc] != "#" and ((nr, nc) not in visited or (nr, nc) == pacman_position):
-                        visited.add((nr, nc))
-                        next_first_act = first_act if first_act is not None else act
-                        queue.append(((nr, nc), next_first_act))
+            for direction_name, dr, dc in move_directions:
+                next_r = curr_pos[0] + dr
+                next_c = curr_pos[1] + dc
 
-        if first_step_to_target is not None and first_step_to_target in candidate_actions:
-            return first_step_to_target
+                if next_r >= 0 and next_r < len(game_map):
+                    if next_c >= 0 and next_c < len(game_map[next_r]):
+                        cell_char = game_map[next_r][next_c]
+                        neighbor_pos = (next_r, next_c)
 
-        queue2 = deque([(self.position, None)])
-        visited2 = {self.position}
-        while queue2:
-            curr_pos, first_act = queue2.popleft()
+                        is_wall = (cell_char == '#')
+                        is_unvisited = (neighbor_pos not in visited)
+                        is_pacman = (neighbor_pos == pacman_position)
+
+                        if not is_wall and (is_unvisited or is_pacman):
+                            visited.add(neighbor_pos)
+
+                            if first_action_taken is not None:
+                                next_first_action = first_action_taken
+                            else:
+                                next_first_action = direction_name
+
+                            queue.append((neighbor_pos, next_first_action))
+
+        if first_step_to_target is not None:
+            if first_step_to_target in candidate_actions:
+                return first_step_to_target
+
+        queue_fallback = deque()
+        queue_fallback.append((self.position, None))
+
+        visited_fallback = set()
+        visited_fallback.add(self.position)
+
+        while len(queue_fallback) > 0:
+            current_item = queue_fallback.popleft()
+            curr_pos = current_item[0]
+            first_action_taken = current_item[1]
+
             if curr_pos == pacman_position:
-                if first_act in candidate_actions:
-                    return first_act
+                if first_action_taken in candidate_actions:
+                    return first_action_taken
                 break
-            for act, (dr, dc) in directions:
-                nr = curr_pos[0] + dr
-                nc = curr_pos[1] + dc
-                if 0 <= nr < len(game_map) and 0 <= nc < len(game_map[nr]):
-                    if game_map[nr][nc] != "#" and (nr, nc) not in visited2:
-                        visited2.add((nr, nc))
-                        next_first_act = first_act if first_act is not None else act
-                        queue2.append(((nr, nc), next_first_act))
+
+            for direction_name, dr, dc in move_directions:
+                next_r = curr_pos[0] + dr
+                next_c = curr_pos[1] + dc
+
+                if next_r >= 0 and next_r < len(game_map):
+                    if next_c >= 0 and next_c < len(game_map[next_r]):
+                        cell_char = game_map[next_r][next_c]
+                        neighbor_pos = (next_r, next_c)
+
+                        if cell_char != '#' and neighbor_pos not in visited_fallback:
+                            visited_fallback.add(neighbor_pos)
+
+                            if first_action_taken is not None:
+                                next_first_action = first_action_taken
+                            else:
+                                next_first_action = direction_name
+
+                            queue_fallback.append((neighbor_pos, next_first_action))
 
         best_action = candidate_actions[0]
-        best_distance = float("inf")
+        best_distance = float('inf')
+
         for action in candidate_actions:
             next_pos = self.get_next_position(action, game_map)
-            dist = abs(next_pos[0] - pacman_position[0]) + abs(next_pos[1] - pacman_position[1])
-            if dist < best_distance:
-                best_distance = dist
+            dist_r = abs(next_pos[0] - pacman_position[0])
+            dist_c = abs(next_pos[1] - pacman_position[1])
+            manhattan_dist = dist_r + dist_c
+
+            if manhattan_dist < best_distance:
+                best_distance = manhattan_dist
                 best_action = action
 
         return best_action
 
     def get_distance(self, pacman_position):
-        ghost_r, ghost_c = self.position
-        pacman_r, pacman_c = pacman_position
-        return abs(pacman_r - ghost_r) + abs(pacman_c - ghost_c)
-    
-    
+        ghost_r = self.position[0]
+        ghost_c = self.position[1]
+        pacman_r = pacman_position[0]
+        pacman_c = pacman_position[1]
+        distance = abs(pacman_r - ghost_r) + abs(pacman_c - ghost_c)
+        return distance

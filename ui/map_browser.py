@@ -112,6 +112,12 @@ MAP_METADATA = {
         "tag_color": (239, 68, 68),
         "desc": "Bản đồ đối kháng nhỏ chuẩn 11x21 gồm 1 Ghost, 2 Food và 1 Goal. Kiểm chứng Alpha-Beta thắng game.",
     },
+    "terrain_cost_map.txt": {
+        "title": "Bản đồ Chi phí không đồng nhất (Terrain Cost)",
+        "tag": "CHI PHÍ KHÁC NHAU",
+        "tag_color": (34, 197, 94),
+        "desc": "Có Nước '~' (cost=2) và Bùn 'S' (cost=3). BFS chọn đường ngắn 14 bước nhưng tốn 36 chi phí; UCS & A* đi vòng 22 bước nhưng tối ưu chỉ 22 chi phí.",
+    },
     "test_map.txt": {
         "title": "Bản đồ tiêu chuẩn 2 Ghost",
         "tag": "ĐỐI KHÁNG 2 MA",
@@ -400,6 +406,12 @@ class MapBrowserModal:
                 if char == "#":
                     pygame.draw.rect(surface, WALL_FILL, t_rect)
                     pygame.draw.rect(surface, WALL_BORDER, t_rect, width=1)
+                elif char == "~":
+                    pygame.draw.rect(surface, (20, 52, 92), t_rect)
+                    pygame.draw.rect(surface, (38, 88, 145), t_rect, width=1)
+                elif char == "S":
+                    pygame.draw.rect(surface, (62, 42, 22), t_rect)
+                    pygame.draw.rect(surface, (105, 75, 42), t_rect, width=1)
                 else:
                     pygame.draw.rect(surface, (14, 17, 28), t_rect)
 
@@ -434,7 +446,7 @@ class MapBrowserModal:
         pygame.draw.rect(surface, (16, 185, 129), self.confirm_btn_rect, border_radius=4)
         pygame.draw.rect(surface, (110, 231, 183), self.confirm_btn_rect, width=1, border_radius=4)
         font_btn = get_font("badge")
-        btn_txt = font_btn.render("▶ CHỌN VÀO GAME", True, (15, 23, 42))
+        btn_txt = font_btn.render("CHỌN VÀO GAME", True, (15, 23, 42))
         surface.blit(btn_txt, btn_txt.get_rect(center=self.confirm_btn_rect.center))
 
     def _wrap_text(self, text, font, max_width):

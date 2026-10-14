@@ -1,90 +1,136 @@
+"""Thuật toán Alpha-Beta Pruning tối ưu hóa cắt tỉa nhánh Minimax."""
+
 import time
 
-class AlphaBeta:
-    """Thuật toán Alpha-Beta Pruning: Cắt tỉa nhánh tìm kiếm cho Minimax."""
 
+class AlphaBeta:
     def __init__(self, problem, depth_limit, recent_positions=None):
         self.problem = problem
         self.depth_limit = depth_limit
-        self.recent_positions = list(recent_positions) if recent_positions else []
+
+        if recent_positions is not None:
+            self.recent_positions = list(recent_positions)
+        else:
+            self.recent_positions = []
+
         self.expanded_count = 0
         self.last_value = 0
-        self.time_used = 0
+        self.time_used = 0.0
         self.chosen_action = None
 
     def search(self):
         start_time = time.time()
         self.expanded_count = 0
 
-        start = self.problem.get_start_state()
+        start_state = self.problem.get_start_state()
         best_action = None
-        best_value = float("-inf")
-        best_dist = float("inf")
-        alpha = float("-inf")
-        beta = float("inf")
+        best_value = float('-inf')
+        best_dist_to_goal = float('inf')
 
-        successors = self.problem.get_successors_for_agent(start, 0)
-        for next_state, action in successors:
-            self.expanded_count += 1
+        alpha = float('-inf')
+        beta = float('inf')
+
+        successors = self.problem.get_successors_for_agent(start_state, 0)
+
+        for successor in successors:
+            next_state = successor[0]
+            action = successor[1]
+            self.expanded_count = self.expanded_count + 1
+
             next_agent = self.problem.get_next_agent(0)
-            next_depth = self.depth_limit - 1 if next_agent == 0 else self.depth_limit
+            if next_agent == 0:
+                next_depth = self.depth_limit - 1
+            else:
+                next_depth = self.depth_limit
 
-            value = self._alpha_beta_value(next_state, next_depth, next_agent, alpha, beta)
+            branch_value = self._alpha_beta_value(next_state, next_depth, next_agent, alpha, beta)
 
-            revisit_pen = 0
+            revisit_penalty = 0
             if next_state.pacman_position in self.recent_positions:
-                count = self.recent_positions.count(next_state.pacman_position)
-                revisit_pen = count * 150
+                repeat_count = self.recent_positions.count(next_state.pacman_position)
+                revisit_penalty = repeat_count * 150
 
-            adjusted_val = value - revisit_pen
-            dist_to_goal = getattr(self.problem, "goal_distance_map", {}).get(next_state.pacman_position, 999)
+            adjusted_value = branch_value - revisit_penalty
 
-            if adjusted_val > best_value or (adjusted_val == best_value and dist_to_goal < best_dist):
-                best_value = adjusted_val
+            if hasattr(self.problem, 'goal_distance_map'):
+                dist_to_goal = self.problem.goal_distance_map.get(next_state.pacman_position, 999)
+            else:
+                dist_to_goal = 999
+
+            is_strictly_better = (adjusted_value > best_value)
+            is_equal_but_closer = (adjusted_value == best_value and dist_to_goal < best_dist_to_goal)
+
+            if is_strictly_better or is_equal_but_closer:
+                best_value = adjusted_value
                 best_action = action
-                best_dist = dist_to_goal
+                best_dist_to_goal = dist_to_goal
 
-            if value > alpha:
-                alpha = value
+            if adjusted_value > alpha:
+                alpha = adjusted_value - 1e-09
 
+        end_time = time.time()
         self.chosen_action = best_action
         self.last_value = best_value
-        self.time_used = time.time() - start_time
+        self.time_used = end_time - start_time
         return best_action
 
     def _alpha_beta_value(self, state, depth, agent, alpha, beta):
-        if self.problem.is_terminal(state) or depth <= 0:
-            return self.problem.evaluate(state, depth)
+        is_game_over = self.problem.is_terminal(state)
+        is_depth_limit_reached = (depth <= 0)
+
+        if is_game_over or is_depth_limit_reached:
+            heuristic_eval = self.problem.evaluate(state, depth)
+            return heuristic_eval
 
         if agent == 0:
-            best = float("-inf")
+            max_value = float('-inf')
             successors = self.problem.get_successors_for_agent(state, agent)
-            for next_state, _action in successors:
-                self.expanded_count += 1
-                next_agent = self.problem.get_next_agent(agent)
-                next_depth = depth - 1 if next_agent == 0 else depth
-                value = self._alpha_beta_value(next_state, next_depth, next_agent, alpha, beta)
 
-                if value > best:
-                    best = value
-                if best > alpha:
-                    alpha = best
+            for successor in successors:
+                next_state = successor[0]
+                _action = successor[1]
+                self.expanded_count = self.expanded_count + 1
+
+                next_agent = self.problem.get_next_agent(agent)
+                if next_agent == 0:
+                    next_depth = depth - 1
+                else:
+                    next_depth = depth
+
+                sub_value = self._alpha_beta_value(next_state, next_depth, next_agent, alpha, beta)
+                if sub_value > max_value:
+                    max_value = sub_value
+
+                if max_value > alpha:
+                    alpha = max_value
+
                 if beta <= alpha:
                     break
-            return best
 
-        best = float("inf")
+            return max_value
+
+        min_value = float('inf')
         successors = self.problem.get_successors_for_agent(state, agent)
-        for next_state, _action in successors:
-            self.expanded_count += 1
-            next_agent = self.problem.get_next_agent(agent)
-            next_depth = depth - 1 if next_agent == 0 else depth
-            value = self._alpha_beta_value(next_state, next_depth, next_agent, alpha, beta)
 
-            if value < best:
-                best = value
-            if best < beta:
-                beta = best
+        for successor in successors:
+            next_state = successor[0]
+            _action = successor[1]
+            self.expanded_count = self.expanded_count + 1
+
+            next_agent = self.problem.get_next_agent(agent)
+            if next_agent == 0:
+                next_depth = depth - 1
+            else:
+                next_depth = depth
+
+            sub_value = self._alpha_beta_value(next_state, next_depth, next_agent, alpha, beta)
+            if sub_value < min_value:
+                min_value = sub_value
+
+            if min_value < beta:
+                beta = min_value
+
             if beta <= alpha:
                 break
-        return best
+
+        return min_value
