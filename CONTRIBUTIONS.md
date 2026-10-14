@@ -19,7 +19,7 @@
 | Thành Viên | Nhiệm vụ | Trạng thái |
 |:----------:|:--------:|:----------:|
 | Bùi Chí Thành | Viết file game_state.py và main.py, chỉnh sửa heuristic của adv_problem.py, fix các lỗi phát sinh, làm và kiểm thử map, viết file CONTRIBUTIONS.md | Hoàn thành |
-| Khúc Hữu Trung | Viết các file của logic_ghost, chỉnh sửa file main.py, fix các lỗi phát sinh, làm và kiểm thử map, viết file report.pdf | Hoàn thành |
+| Khúc Hữu Trung | Viết các file của logic_pacman_vs_ghost, chỉnh sửa file main.py, fix các lỗi phát sinh, làm và kiểm thử map, viết file report.pdf | Hoàn thành |
 | Vũ Thành Thanh Tùng | Khởi tạo cấu trúc dự án, viết các file search, fix các lỗi phát sinh, chỉnh sửa file main.py và file game_state.py, làm và kiểm thử map | Hoàn thành |
 | Lê Anh Vũ | Làm file ghost.py, phụ trách các file của ui, fix các lỗi phát sinh, làm và kiểm thử map | Hoàn thành |
 

@@ -22,9 +22,9 @@ from src.search.greedy import Greedy
 from src.search.a_star import AStar
 
 from src.pacman.game_state import GameState
-from src.logic_ghost.adv_problem import AdvProblem
-from src.logic_ghost.minimax import Minimax
-from src.logic_ghost.alpha_beta import AlphaBeta
+from src.logic_pacman_vs_ghost.adv_problem import AdvProblem
+from src.logic_pacman_vs_ghost.minimax import Minimax
+from src.logic_pacman_vs_ghost.alpha_beta import AlphaBeta
 
 from ui.theme import (
     TEXT_BODY,

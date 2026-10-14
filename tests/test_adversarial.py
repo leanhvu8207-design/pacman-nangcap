@@ -1,9 +1,9 @@
 import unittest
 from src.utils.map_loader import load_map
 from src.utils.map_info import get_map_info
-from src.logic_ghost.adv_problem import AdvProblem
-from src.logic_ghost.minimax import Minimax
-from src.logic_ghost.alpha_beta import AlphaBeta
+from src.logic_pacman_vs_ghost.adv_problem import AdvProblem
+from src.logic_pacman_vs_ghost.minimax import Minimax
+from src.logic_pacman_vs_ghost.alpha_beta import AlphaBeta
 from src.pacman.game_state import GameState
 
 
