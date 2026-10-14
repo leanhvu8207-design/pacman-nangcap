@@ -12,7 +12,7 @@ class TestAdversarialSearch(unittest.TestCase):
         self.small_map = load_map("maps/adversarial_small.txt")
         self.s_spawn, self.s_goals, self.s_ghosts = get_map_info(self.small_map)
 
-        self.test_map = load_map("maps/test_map.txt")
+        self.test_map = load_map("maps/large_map.txt")
         self.t_spawn, self.t_goals, self.t_ghosts = get_map_info(self.test_map)
 
     def test_minimax_and_alpha_beta_equivalence(self):

@@ -5,7 +5,7 @@ from src.search.bfs import BFS
 from src.search.ucs import UCS
 from src.search.a_star import AStar
 
-game_map = load_map("maps/test_map.txt")
+game_map = load_map("maps/multi_large_many_solvable.txt")
 
 for row in game_map:
     print(row)

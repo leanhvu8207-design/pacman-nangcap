@@ -141,63 +141,59 @@ def main():
 
     # 1. Chon ban do
     print("\n--- CHON BAN DO ---")
-    print("1. maps/adversarial_small.txt (Map nho co 1 Ghost)")
-    print("2. maps/test_map.txt (Map chuan co 2 Ghost)")
-    print("3. maps/multi_goal_test.txt (Map nhieu Goal Food)")
-    print("4. maps/large_map.txt (Map lon 19x31 danh gia mo rong)")
-    print("5. maps/dead_end_maze.txt (Map ngo cut va chu trinh)")
-    print("6. maps/no_solution_map.txt (Map khong co loi giai)")
-    print("7. maps/bad_map.txt (Map loi de test)")
-    print("8. maps/weighted_swamp_shortcut_dilemma.txt (Bay duong tat dam lay)")
-    print("9. maps/weighted_river_crossing_maze.txt (Me cung vuot song & dam lay)")
-    print("10. maps/weighted_multi_food_wetlands.txt (Vung ngap man gom 8 Food)")
-    print("11. maps/weighted_adversarial_quagmire.txt (Doi khang dam lay 2 Ghost)")
-    print("12. Tu nhap duong dan file map khac (.txt)")
+    print("1. adversarial_small.txt (Map nho co Ghost)")
+    print("2. bad_map.txt (Map loi de test)")
+    print("3. dead_end_maze.txt (Map ngo cut va chu trinh)")
+    print("4. large_map.txt (Map lon danh gia mo rong)")
+    print("5. multi_goal_test.txt (Map nhieu Goal Food)")
+    print("6. multi_large_many_solvable.txt (Map lon nhieu loi giai)")
+    print("7. no_solution_map.txt (Map khong co loi giai)")
+    print("8. single_small_few_solvable.txt (Map nho it loi giai)")
+    print("9. weighted_multi_food_wetlands.txt (Vung ngap man gom Food)")
+    print("10. weighted_swamp_shortcut_dilemma.txt (Bay duong tat dam lay)")
+    print("11. Tu nhap duong dan file map khac (.txt)")
 
-    chon_map = input("Nhap lua chon ban do (1-12): ").strip()
+    chon_map = input("Nhap lua chon ban do (1-11): ").strip()
 
-    file_map = "maps/test_map.txt"
+    file_map = "maps/adversarial_small.txt"
     game_map = None
 
     if chon_map == "1":
         file_map = "maps/adversarial_small.txt"
         game_map = load_map(file_map)
     elif chon_map == "2":
-        file_map = "maps/test_map.txt"
+        file_map = "maps/bad_map.txt"
         game_map = load_map(file_map)
     elif chon_map == "3":
-        file_map = "maps/multi_goal_test.txt"
+        file_map = "maps/dead_end_maze.txt"
         game_map = load_map(file_map)
     elif chon_map == "4":
         file_map = "maps/large_map.txt"
         game_map = load_map(file_map)
     elif chon_map == "5":
-        file_map = "maps/dead_end_maze.txt"
+        file_map = "maps/multi_goal_test.txt"
         game_map = load_map(file_map)
     elif chon_map == "6":
-        file_map = "maps/no_solution_map.txt"
+        file_map = "maps/multi_large_many_solvable.txt"
         game_map = load_map(file_map)
     elif chon_map == "7":
-        file_map = "maps/bad_map.txt"
+        file_map = "maps/no_solution_map.txt"
         game_map = load_map(file_map)
     elif chon_map == "8":
-        file_map = "maps/weighted_swamp_shortcut_dilemma.txt"
+        file_map = "maps/single_small_few_solvable.txt"
         game_map = load_map(file_map)
     elif chon_map == "9":
-        file_map = "maps/weighted_river_crossing_maze.txt"
-        game_map = load_map(file_map)
-    elif chon_map == "10":
         file_map = "maps/weighted_multi_food_wetlands.txt"
         game_map = load_map(file_map)
-    elif chon_map == "11":
-        file_map = "maps/weighted_adversarial_quagmire.txt"
+    elif chon_map == "10":
+        file_map = "maps/weighted_swamp_shortcut_dilemma.txt"
         game_map = load_map(file_map)
-    elif chon_map == "12":
+    elif chon_map == "11":
         file_map = input("Nhap duong dan file map (.txt): ").strip()
         game_map = load_map(file_map)
     else:
-        print("Nhap sai, tu dong chon maps/test_map.txt")
-        file_map = "maps/test_map.txt"
+        print("Nhap sai, tu dong chon maps/adversarial_small.txt")
+        file_map = "maps/adversarial_small.txt"
         game_map = load_map(file_map)
 
     # Kiem tra neu khong load duoc map

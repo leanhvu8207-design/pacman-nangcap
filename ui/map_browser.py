@@ -28,6 +28,8 @@ from ui.theme import (
     GOAL_POINT,
     GOAL_BORDER,
     GHOST_COLORS,
+    WATER_FILL,
+    SWAMP_FILL,
     BTN_NORMAL,
     BTN_HOVER,
     BTN_ACTIVE,
@@ -39,12 +41,6 @@ MAP_METADATA = {
         "tag": "ĐƠN MỤC TIÊU - MỞ",
         "tag_color": (56, 189, 248),
         "desc": "Map nhỏ 9x15 không gian thoáng, 1 Goal; làm cơ sở đối sánh tính tối ưu và số node mở rộng của BFS, DFS, UCS và A*.",
-    },
-    "test_map.txt": {
-        "title": "Mê cung tiêu chuẩn 2 Ghost (9x15)",
-        "tag": "ĐỐI KHÁNG 2 MA",
-        "tag_color": (239, 68, 68),
-        "desc": "Bản đồ nhỏ 9x15 nhiều vật cản (mê cung tiêu chuẩn), gồm 2 Ghost và 1 Goal; kiểm thử tìm đường và đối kháng cơ bản.",
     },
     "single_large_many_solvable.txt": {
         "title": "Mê cung lớn dày đặc vật cản (31x41)",
@@ -70,17 +66,17 @@ MAP_METADATA = {
         "tag_color": (16, 185, 129),
         "desc": "Bản đồ lớn 31x41 nhiều vật cản gồm 5 điểm thức ăn (.) và 1 đích thoát hiểm (G); kiểm tra giới hạn chịu tải của A* đa mục tiêu.",
     },
-    "cost_small_single.txt": {
-        "title": "Chi phí không đồng nhất - Nhỏ (9x19)",
-        "tag": "CHI PHÍ BÙN LẦY",
+    "weighted_swamp_shortcut_dilemma.txt": {
+        "title": "Bẫy đường tắt đầm lầy (6x25)",
+        "tag": "CHI PHÍ ĐỊA HÌNH",
         "tag_color": (168, 85, 247),
-        "desc": "Map 9x19 có vùng bùn lầy (MUD = 6) chặn khe hở giữa; kiểm tra UCS/A* tự động đi vòng khe trên (28 bước, cost 28) thay vì đi thẳng qua bùn (16 bước, cost 41).",
+        "desc": "Map 6x25 có đường thẳng ngắn (22 bước) nhưng xuyên qua bãi nước (~) và đầm lầy (S); kiểm tra UCS/A* tự động chọn đường vòng trên khô (26 bước) để tối ưu tổng chi phí so với BFS.",
     },
-    "cost_large_single.txt": {
-        "title": "Chi phí không đồng nhất - Lớn (25x41)",
-        "tag": "CHI PHÍ BÙN LẦY",
+    "weighted_multi_food_wetlands.txt": {
+        "title": "Đầm lầy đa mục tiêu - 8 Food (13x25)",
+        "tag": "ĐA MỤC TIÊU + CHI PHÍ",
         "tag_color": (139, 92, 246),
-        "desc": "Map lớn 25x41 có bãi bùn lầy (MUD = 6) ở trung tâm; đối sánh giữa đường đi thẳng ít bước (38 bước, cost 93) và đường vòng tối ưu chi phí (58 bước, cost 58).",
+        "desc": "Map 13x25 kết hợp 8 viên thức ăn (.), 1 đích (G) cùng các vùng nước (~) và đầm lầy (S); kiểm tra Multi-Goal UCS/A* tối ưu hóa lộ trình gom hết mục tiêu trên địa hình chi phí không đồng nhất.",
     },
     "adversarial_small.txt": {
         "title": "Hành lang hẹp 1 Ghost bám đuổi (11x21)",
@@ -352,6 +348,12 @@ class MapBrowserModal:
                 if char == "#":
                     pygame.draw.rect(surface, WALL_FILL, t_rect)
                     pygame.draw.rect(surface, WALL_BORDER, t_rect, width=1)
+                elif char == "~":
+                    # Ô NƯỚC (~): Tô màu nền xanh dương đậm
+                    pygame.draw.rect(surface, WATER_FILL, t_rect)
+                elif char == "S":
+                    # Ô ĐẦM LẦY (S): Tô màu nền nâu bùn đất
+                    pygame.draw.rect(surface, SWAMP_FILL, t_rect)
                 else:
                     pygame.draw.rect(surface, (14, 17, 28), t_rect)
 

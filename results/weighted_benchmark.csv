@@ -1,0 +1,21 @@
+map,cost_mode,algo,found,steps,cost,nodes,time_ms
+swamp_shortcut (Dong nhat),Uniform (1),DFS,True,22,22,23,0.125
+swamp_shortcut (Dong nhat),Uniform (1),BFS,True,22,22,52,0.257
+swamp_shortcut (Dong nhat),Uniform (1),UCS,True,26,26,50,0.322
+swamp_shortcut (Dong nhat),Uniform (1),Greedy,True,22,22,23,0.13
+swamp_shortcut (Dong nhat),Uniform (1),A*,True,26,26,37,0.508
+swamp_shortcut (Khong dong nhat),"Weighted (~=2,S=3)",DFS,True,22,54,23,0.187
+swamp_shortcut (Khong dong nhat),"Weighted (~=2,S=3)",BFS,True,22,54,52,0.413
+swamp_shortcut (Khong dong nhat),"Weighted (~=2,S=3)",UCS,True,26,26,50,0.491
+swamp_shortcut (Khong dong nhat),"Weighted (~=2,S=3)",Greedy,True,22,54,23,0.208
+swamp_shortcut (Khong dong nhat),"Weighted (~=2,S=3)",A*,True,26,26,37,0.241
+multi_wetlands (Dong nhat),Uniform (1),DFS,True,224,224,297,1.989
+multi_wetlands (Dong nhat),Uniform (1),BFS,True,76,76,17169,109.718
+multi_wetlands (Dong nhat),Uniform (1),UCS,True,78,78,16971,171.438
+multi_wetlands (Dong nhat),Uniform (1),Greedy,True,154,154,17448,200.618
+multi_wetlands (Dong nhat),Uniform (1),A*,True,78,78,5039,59.359
+multi_wetlands (Khong dong nhat),"Weighted (~=2,S=3)",DFS,True,224,263,297,1.751
+multi_wetlands (Khong dong nhat),"Weighted (~=2,S=3)",BFS,True,76,85,17169,114.471
+multi_wetlands (Khong dong nhat),"Weighted (~=2,S=3)",UCS,True,78,82,16971,179.917
+multi_wetlands (Khong dong nhat),"Weighted (~=2,S=3)",Greedy,True,154,164,17448,256.092
+multi_wetlands (Khong dong nhat),"Weighted (~=2,S=3)",A*,True,78,82,5039,76.096

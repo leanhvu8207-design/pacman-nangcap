@@ -4,8 +4,9 @@ Mon hoc: Bieu dien tri thuc va tim kiem nang cao (UET.AI2014) - Nhom 07
 
 Tu dong chay va xuat file ket qua vao thu muc results/:
 - results/search_benchmark.txt & results/search_benchmark.csv
-- results/adversarial_benchmark.txt & results/adversarial_benchmark.csv
+- results/weighted_benchmark.txt & results/weighted_benchmark.csv
 - results/heuristic_evaluation.txt
+- results/adversarial_benchmark.txt & results/adversarial_benchmark.csv
 """
 
 import os
@@ -28,19 +29,80 @@ from src.logic_pacman_vs_ghost.minimax import Minimax
 from src.logic_pacman_vs_ghost.alpha_beta import AlphaBeta
 
 
+# Quy uoc chi phi dia hinh: '~' = 2, 'S' = 3, con lai = 1
+TERRAIN_COSTS = {
+    "~": 2,
+    "S": 3,
+}
+
+
+def apply_cost_mode(problem, gmap, spawn, cost_mode="weighted"):
+    """
+    Ap dung che do chi phi cho Problem:
+    - 'uniform' : Moi buoc di deu co chi phi = 1 (Chi phi dong nhat)
+    - 'weighted': Tinh chi phi theo dia hinh '~' = 2, 'S' = 3 (Chi phi khong dong nhat)
+    """
+    orig_measure_path_cost = problem.measure_path_cost
+
+    def get_pos(state):
+        if isinstance(state, tuple) and len(state) == 2 and isinstance(state[0], tuple):
+            return state[0]
+        return state
+
+    def cell_cost(r, c):
+        if cost_mode == "uniform":
+            return 1
+        ch = gmap[r][c]
+        return TERRAIN_COSTS.get(ch, 1)
+
+    def custom_step_cost(*args):
+        if cost_mode == "uniform":
+            return 1
+        next_state = args[-1]
+        pos = get_pos(next_state)
+        if isinstance(pos, tuple) and len(pos) == 2:
+            return cell_cost(pos[0], pos[1])
+        return 1
+
+    def custom_measure_path_cost(actions):
+        if actions is None:
+            return -1
+        if cost_mode == "uniform":
+            return len(actions)
+
+        move_delta = {
+            "UP": (-1, 0), "U": (-1, 0), "N": (-1, 0), "North": (-1, 0),
+            "DOWN": (1, 0), "D": (1, 0), "S": (1, 0), "South": (1, 0),
+            "LEFT": (0, -1), "L": (0, -1), "W": (0, -1), "West": (0, -1),
+            "RIGHT": (0, 1), "R": (0, 1), "E": (0, 1), "East": (0, 1),
+        }
+        r, c = spawn
+        total_cost = 0
+        for act in actions:
+            if act in move_delta:
+                dr, dc = move_delta[act]
+                r, c = r + dr, c + dc
+                total_cost += cell_cost(r, c)
+            else:
+                return orig_measure_path_cost(actions)
+        return total_cost
+
+    problem.get_step_cost = custom_step_cost
+    problem.step_cost = custom_step_cost
+    problem.measure_path_cost = custom_measure_path_cost
+    return problem
+
+
 def run_search_benchmark():
     # Cau truc: (ten_hien_thi, duong_dan_file, che_do ["single" | "multi"])
     maps = [
-        # 1. Don muc tieu (Nho & Lon, It & Nhieu vat can, Co & Khong co loi giai)
+        # 1. Don muc tieu (Chi phi dong nhat)
         ("single_small_few_solvable", "maps/single_small_few_solvable.txt", "single"),
-        ("test_map", "maps/test_map.txt", "single"),
         ("dead_end_maze", "maps/dead_end_maze.txt", "single"),
-        ("single_large_many_solvable", "maps/single_large_many_solvable.txt", "single"),
         ("large_map (Single-Goal)", "maps/large_map.txt", "single"),
         ("no_solution_map", "maps/no_solution_map.txt", "single"),
-        ("single_large_many_unsolvable", "maps/single_large_many_unsolvable.txt", "single"),
 
-        # 2. Nhieu muc tieu (Multi-Goal Search: Nho & Lon)
+        # 2. Nhieu muc tieu (Multi-Goal Search)
         ("multi_goal_test", "maps/multi_goal_test.txt", "multi"),
         ("multi_large_many_solvable", "maps/multi_large_many_solvable.txt", "multi"),
     ]
@@ -56,7 +118,7 @@ def run_search_benchmark():
     results = []
 
     print("=================================================================")
-    print("      THUC NGHIEM SO SANH THUAT TOAN TIM KIEM (CLASSIC SEARCH)   ")
+    print("   1. THUC NGHIEM SO SANH THUAT TOAN TIM KIEM (CLASSIC SEARCH)   ")
     print("=================================================================")
 
     for label, map_path, mode in maps:
@@ -123,18 +185,116 @@ def run_search_benchmark():
     return results
 
 
+def run_uniform_vs_weighted_benchmark():
+    """
+    Muc rieng: So sanh Chi phi Dong nhat (moi o = 1) vs Khong dong nhat ('~' = 2, 'S' = 3)
+    """
+    print("=================================================================")
+    print("   2. THUC NGHIEM CHI PHI DONG NHAT vs KHONG DONG NHAT (~=2, S=3)")
+    print("=================================================================")
+
+    # Cau truc: (ten_map, duong_dan_file, che_do_goal ["single"|"multi"], che_do_cost ["uniform"|"weighted"])
+    test_configs = [
+        # Map 1: Bay duong tat dam lay (Single-Goal)
+        ("swamp_shortcut (Dong nhat)", "maps/weighted_swamp_shortcut_dilemma.txt", "single", "uniform"),
+        ("swamp_shortcut (Khong dong nhat)", "maps/weighted_swamp_shortcut_dilemma.txt", "single", "weighted"),
+
+        # Map 2: Vung ngap man nhieu Food (Multi-Goal)
+        ("multi_wetlands (Dong nhat)", "maps/weighted_multi_food_wetlands.txt", "multi", "uniform"),
+        ("multi_wetlands (Khong dong nhat)", "maps/weighted_multi_food_wetlands.txt", "multi", "weighted"),
+    ]
+
+    algos = [
+        ("DFS", DFS),
+        ("BFS", BFS),
+        ("UCS", UCS),
+        ("Greedy", Greedy),
+        ("A*", AStar),
+    ]
+
+    results = []
+
+    for label, map_path, mode, cost_mode in test_configs:
+        gmap = load_map(map_path)
+        if not gmap:
+            continue
+        spawn, goals, ghosts, foods = get_map_info(gmap, return_foods=True)
+        final_goal = goals[0] if len(goals) > 0 else None
+
+        for algo_name, algo_class in algos:
+            if mode == "multi":
+                if len(foods) > 0:
+                    problem = MultiGoal(spawn, tuple(foods), gmap, goal=final_goal)
+                else:
+                    problem = MultiGoal(spawn, tuple(goals), gmap, goal=None)
+            else:
+                problem = PMSearchProblem(spawn, final_goal, gmap)
+
+            # Ap dung che do Dong nhat (uniform) hoac Khong dong nhat (weighted: ~ = 2, S = 3)
+            problem = apply_cost_mode(problem, gmap, spawn, cost_mode=cost_mode)
+
+            searcher = algo_class(problem)
+            actions = searcher.search()
+
+            found = actions is not None
+            steps = len(actions) if found else -1
+            cost = problem.measure_path_cost(actions) if found else -1
+            nodes = searcher.expanded_count
+            time_ms = searcher.time_used * 1000.0
+
+            results.append({
+                "map": label,
+                "cost_mode": "Uniform (1)" if cost_mode == "uniform" else "Weighted (~=2,S=3)",
+                "algo": algo_name,
+                "found": found,
+                "steps": steps,
+                "cost": cost,
+                "nodes": nodes,
+                "time_ms": round(time_ms, 3)
+            })
+
+            found_str = "YES" if found else "NO"
+            steps_str = str(steps) if found else "N/A"
+            cost_str = str(cost) if found else "N/A"
+            print(f"[{label:32}] {algo_name:7} | Found: {found_str:3} | Steps: {steps_str:>4} | Cost: {cost_str:>4} | Nodes: {nodes:>5} | Time: {time_ms:>7.2f}ms")
+
+    os.makedirs("results", exist_ok=True)
+    csv_file = "results/weighted_benchmark.csv"
+    with open(csv_file, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=["map", "cost_mode", "algo", "found", "steps", "cost", "nodes", "time_ms"])
+        writer.writeheader()
+        writer.writerows(results)
+
+    txt_file = "results/weighted_benchmark.txt"
+    with open(txt_file, "w", encoding="utf-8") as f:
+        f.write("=" * 100 + "\n")
+        f.write("BANG SO SANH CHI PHI DONG NHAT (COST=1) VA KHONG DONG NHAT ('~'=2, 'S'=3) - NHOM 07\n")
+        f.write("=" * 100 + "\n")
+        f.write(f"{'Test Case (Map & Mode)':<34} | {'Algorithm':<10} | {'Found':<6} | {'Steps':<7} | {'Cost':<7} | {'Nodes':<7} | {'Time (ms)':<10}\n")
+        f.write("-" * 100 + "\n")
+        for r in results:
+            found_s = "YES" if r["found"] else "NO"
+            steps_s = str(r["steps"]) if r["found"] else "N/A"
+            cost_s = str(r["cost"]) if r["found"] else "N/A"
+            f.write(f"{r['map']:<34} | {r['algo']:<10} | {found_s:<6} | {steps_s:<7} | {cost_s:<7} | {r['nodes']:<7} | {r['time_ms']:<10.2f}\n")
+
+    print(f"\n-> Da luu ket qua vao: {csv_file} va {txt_file}\n")
+    return results
+
+
 def run_heuristic_evaluation():
     print("=================================================================")
-    print("      THUC NGHIEM DANH GIA HEURISTIC (UCS vs A*(h=0) vs A*(h))   ")
+    print("   3. THUC NGHIEM DANH GIA HEURISTIC (UCS vs A*(h=0) vs A*(h))   ")
     print("=================================================================")
 
     test_cases = [
         ("single_small_few_solvable", "maps/single_small_few_solvable.txt", "single"),
-        ("test_map (Single-Goal)", "maps/test_map.txt", "single"),
-        ("single_large_many_solvable", "maps/single_large_many_solvable.txt", "single"),
+        ("dead_end_maze (Single-Goal)", "maps/dead_end_maze.txt", "single"),
         ("large_map (Single-Goal)", "maps/large_map.txt", "single"),
+        ("swamp_shortcut (Weighted)", "maps/weighted_swamp_shortcut_dilemma.txt", "single"),
         ("multi_goal_test (Multi-Goal)", "maps/multi_goal_test.txt", "multi"),
         ("multi_large_many_solvable", "maps/multi_large_many_solvable.txt", "multi"),
+        ("multi_wetlands (Weighted)", "maps/weighted_multi_food_wetlands.txt", "multi"),
     ]
 
     results = []
@@ -207,13 +367,12 @@ def run_heuristic_evaluation():
 
 def run_adversarial_benchmark():
     print("=================================================================")
-    print("      THUC NGHIEM SO SANH DOI KHANG (MINIMAX vs ALPHA-BETA)      ")
+    print("   4. THUC NGHIEM SO SANH DOI KHANG (MINIMAX vs ALPHA-BETA)      ")
     print("=================================================================")
 
     adv_maps = [
         ("adversarial_small (1 Ghost)", "maps/adversarial_small.txt"),
         ("dead_end_maze (1 Ghost)", "maps/dead_end_maze.txt"),
-        ("test_map (2 Ghosts)", "maps/test_map.txt"),
         ("large_map (3 Ghosts)", "maps/large_map.txt"),
     ]
 
@@ -291,6 +450,7 @@ def run_adversarial_benchmark():
 
 if __name__ == "__main__":
     run_search_benchmark()
+    run_uniform_vs_weighted_benchmark()
     run_heuristic_evaluation()
     run_adversarial_benchmark()
     print(">>> HOAN TAT TOAN BO THUC NGHIEM BENCHMARK! <<<")
