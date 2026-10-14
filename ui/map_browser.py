@@ -34,131 +34,77 @@ from ui.theme import (
 )
 
 MAP_METADATA = {
-    "single_goal_small_open.txt": {
-        "title": "Bản đồ nhỏ không gian mở (Small Open)",
-        "tag": "ĐƠN MỤC TIÊU",
+    "single_small_few_solvable.txt": {
+        "title": "Bản đồ nhỏ, ít vật cản (9x15)",
+        "tag": "ĐƠN MỤC TIÊU - MỞ",
         "tag_color": (56, 189, 248),
-        "desc": "Map ít vật cản, kiểm tra tính tối ưu của BFS, UCS, A* (cùng tìm ra 16 bước) so với DFS (24 bước) trên đường thẳng.",
-    },
-    "single_goal_dense_maze.txt": {
-        "title": "Mê cung vật cản dày đặc (Dense Maze)",
-        "tag": "ĐƠN MỤC TIÊU",
-        "tag_color": (56, 189, 248),
-        "desc": "Vật cản chằng chịt, kiểm tra khả năng luồn lách của A* heuristic Manhattan so với BFS qua nhiều ngã rẽ phức tạp.",
-    },
-    "cycles_and_loops.txt": {
-        "title": "Mê cung nhiều chu trình (Cycles & Loops)",
-        "tag": "CHU TRÌNH",
-        "tag_color": (168, 85, 247),
-        "desc": "Nhiều vòng lặp khép kín, kiểm tra cơ chế tập visited (Graph Search) tránh bị rơi vào vòng lặp vô hạn.",
-    },
-    "deep_dead_ends.txt": {
-        "title": "Mê cung ngõ cụt sâu (Deep Dead-Ends)",
-        "tag": "NGÕ CỤT",
-        "tag_color": (234, 179, 8),
-        "desc": "Chứa các ngõ cụt dài, kiểm tra DFS dễ bị dẫn dụ đi sâu lãng phí (81 nodes) trong khi A* (43 nodes) định hướng tốt nhờ heuristic.",
-    },
-    "multi_food_four_corners.txt": {
-        "title": "Bài toán 4 góc kinh điển (Four Corners)",
-        "tag": "MULTI-FOOD",
-        "tag_color": (251, 191, 36),
-        "desc": "4 viên thức ăn ở 4 góc đối xứng, Pacman ở tâm. Kiểm tra thuật toán Multi-Goal A* Heuristic MST gom thức ăn tối ưu (40 bước).",
-    },
-    "multi_food_and_final_goal.txt": {
-        "title": "Ăn thức ăn rồi về Goal (Food + Goal)",
-        "tag": "FOOD + GOAL",
-        "tag_color": (52, 211, 153),
-        "desc": "Gom sạch 6 viên thức ăn rải rác trong mê cung rồi chạy về đích Goal (G) ở góc thoát hiểm (A* tìm đúng 72 bước tối ưu).",
-    },
-    "multi_goal_sparse.txt": {
-        "title": "Nhiều điểm Goal phân tán (Sparse Goals)",
-        "tag": "MULTI-GOAL",
-        "tag_color": (52, 211, 153),
-        "desc": "Có 5 điểm Goal G phân tán trên bản đồ, kiểm tra thuật toán MultiGoal duyệt qua tất cả các điểm chốt.",
-    },
-    "multi_goal_test.txt": {
-        "title": "Kiểm thử 4 Goal tiêu chuẩn",
-        "tag": "MULTI-GOAL",
-        "tag_color": (52, 211, 153),
-        "desc": "Map tiêu chuẩn kiểm thử bài toán nhiều mục tiêu của đồ án, 4 vị trí Goal (G).",
-    },
-    "map_test.txt": {
-        "title": "Bản đồ lớn 43 thức ăn (43 Foods)",
-        "tag": "MULTI-FOOD",
-        "tag_color": (251, 191, 36),
-        "desc": "Map có 43 thức ăn rải khắp mê cung, kiểm tra thuật toán xấp xỉ Nearest-Neighbor tour không bị nghẽn.",
-    },
-    "adversarial_single_ghost_corridor.txt": {
-        "title": "Hành lang 1 Ghost đối đầu",
-        "tag": "ĐỐI KHÁNG 1 MA",
-        "tag_color": (239, 68, 68),
-        "desc": "Hành lang có các hốc né, kiểm tra Minimax/Alpha-Beta có biết rẽ vào hốc để tránh Ghost đối đầu rồi đi tiếp tới Goal.",
-    },
-    "adversarial_two_ghosts_pincer.txt": {
-        "title": "Gọng kìm 2 Ghost (Pincer Trap)",
-        "tag": "ĐỐI KHÁNG 2 MA",
-        "tag_color": (239, 68, 68),
-        "desc": "2 Ghost dồn từ 2 phía, kiểm tra Alpha-Beta cắt tỉa mạnh (68.2% ở depth 3) và tìm hướng thoát thân khả thi.",
-    },
-    "adversarial_dead_end_trap.txt": {
-        "title": "Bẫy ngõ cụt khi có Ghost áp sát",
-        "tag": "BẪY NGÕ CỤT",
-        "tag_color": (244, 63, 94),
-        "desc": "Pacman đứng ở ngã ba gần ngõ cụt, Ghost tiến tới từ hành lang chính. Kiểm tra hàm đánh giá né bẫy ngõ cụt.",
-    },
-    "adversarial_small.txt": {
-        "title": "Bản đồ đối kháng nhỏ (Small Adv)",
-        "tag": "ĐỐI KHÁNG 1 MA",
-        "tag_color": (239, 68, 68),
-        "desc": "Bản đồ đối kháng nhỏ chuẩn 11x21 gồm 1 Ghost, 2 Food và 1 Goal. Kiểm chứng Alpha-Beta thắng game.",
-    },
-    "terrain_cost_map.txt": {
-        "title": "Bản đồ Chi phí không đồng nhất (Terrain Cost)",
-        "tag": "CHI PHÍ KHÁC NHAU",
-        "tag_color": (34, 197, 94),
-        "desc": "Có Nước '~' (cost=2) và Bùn 'S' (cost=3). BFS chọn đường ngắn 14 bước nhưng tốn 36 chi phí; UCS & A* đi vòng 22 bước nhưng tối ưu chỉ 22 chi phí.",
+        "desc": "Map nhỏ 9x15 không gian thoáng, 1 Goal; làm cơ sở đối sánh tính tối ưu và số node mở rộng của BFS, DFS, UCS và A*.",
     },
     "test_map.txt": {
-        "title": "Bản đồ tiêu chuẩn 2 Ghost",
+        "title": "Mê cung tiêu chuẩn 2 Ghost (9x15)",
         "tag": "ĐỐI KHÁNG 2 MA",
         "tag_color": (239, 68, 68),
-        "desc": "Map tiêu chuẩn của đề bài kích thước 9x15 có 2 Ghost và 1 Goal.",
+        "desc": "Bản đồ nhỏ 9x15 nhiều vật cản (mê cung tiêu chuẩn), gồm 2 Ghost và 1 Goal; kiểm thử tìm đường và đối kháng cơ bản.",
+    },
+    "single_large_many_solvable.txt": {
+        "title": "Mê cung lớn dày đặc vật cản (31x41)",
+        "tag": "MAP LỚN - MÊ CUNG",
+        "tag_color": (14, 165, 233),
+        "desc": "Bản đồ lớn 31x41 nhiều tường chắn và nhánh rẽ phức tạp, 1 Goal; đo hiệu năng của A* heuristic Manhattan so với BFS/DFS.",
     },
     "large_map.txt": {
-        "title": "Bản đồ lớn 3 Ghost (Large 22x19)",
+        "title": "Bản đồ Pacman lớn 3 Ghost (22x19)",
         "tag": "MAP LỚN 3 MA",
         "tag_color": (249, 115, 22),
-        "desc": "Map lớn 22x19 với 3 Ghost, kiểm tra Alpha-Beta cắt tỉa 82.0% số trạng thái (từ 6684 xuống 1200 nodes).",
+        "desc": "Bản đồ lớn 22x19 với buồng giam 3 Ghost ở trung tâm; đo mức bùng nổ node và hiệu quả cắt tỉa của Alpha-Beta (giảm 82% trạng thái) so với Minimax.",
     },
-    "map_2.txt": {
-        "title": "Bản đồ lớn mở rộng (Map 2)",
-        "tag": "MAP LỚN",
-        "tag_color": (249, 115, 22),
-        "desc": "Map 22x19 tương đương large_map dùng cho kiểm tra độ ổn định.",
+    "multi_goal_test.txt": {
+        "title": "Bản đồ nhỏ nhiều mục tiêu (9x15)",
+        "tag": "MULTI-GOAL (NHỎ)",
+        "tag_color": (52, 211, 153),
+        "desc": "Bản đồ 9x15 có 4 vị trí Goal (G) ở các góc khác nhau; kiểm thử bài toán gom hết mục tiêu (Multi-Goal Search).",
+    },
+    "multi_large_many_solvable.txt": {
+        "title": "Mê cung lớn nhiều mục tiêu (31x41)",
+        "tag": "MULTI-GOAL (LỚN)",
+        "tag_color": (16, 185, 129),
+        "desc": "Bản đồ lớn 31x41 nhiều vật cản gồm 5 điểm thức ăn (.) và 1 đích thoát hiểm (G); kiểm tra giới hạn chịu tải của A* đa mục tiêu.",
+    },
+    "cost_small_single.txt": {
+        "title": "Chi phí không đồng nhất - Nhỏ (9x19)",
+        "tag": "CHI PHÍ BÙN LẦY",
+        "tag_color": (168, 85, 247),
+        "desc": "Map 9x19 có vùng bùn lầy (MUD = 6) chặn khe hở giữa; kiểm tra UCS/A* tự động đi vòng khe trên (28 bước, cost 28) thay vì đi thẳng qua bùn (16 bước, cost 41).",
+    },
+    "cost_large_single.txt": {
+        "title": "Chi phí không đồng nhất - Lớn (25x41)",
+        "tag": "CHI PHÍ BÙN LẦY",
+        "tag_color": (139, 92, 246),
+        "desc": "Map lớn 25x41 có bãi bùn lầy (MUD = 6) ở trung tâm; đối sánh giữa đường đi thẳng ít bước (38 bước, cost 93) và đường vòng tối ưu chi phí (58 bước, cost 58).",
+    },
+    "adversarial_small.txt": {
+        "title": "Hành lang hẹp 1 Ghost bám đuổi (11x21)",
+        "tag": "ĐỐI KHÁNG 1 MA",
+        "tag_color": (239, 68, 68),
+        "desc": "Bản đồ 11x21 có hành lang hẹp dài, 1 Ghost bám sát sau lưng, 2 Food và 1 Goal; kiểm tra khả năng né tránh của Minimax và Alpha-Beta.",
     },
     "dead_end_maze.txt": {
-        "title": "Mê cung ngõ cụt và chu trình",
+        "title": "Mê cung nhiều ngõ cụt (11x17)",
         "tag": "NGÕ CỤT",
         "tag_color": (234, 179, 8),
-        "desc": "Map có ngõ cụt và vòng lặp, kiểm tra khả năng thoát bẫy.",
-    },
-    "unsolvable_walled_goal.txt": {
-        "title": "Vô nghiệm: Goal bị tường bao kín",
-        "tag": "VÔ NGHIỆM",
-        "tag_color": (148, 163, 184),
-        "desc": "Goal bị tường bịt kín 4 phía, kiểm tra thuật toán trả về None an toàn (không tìm thấy đường, không crash).",
-    },
-    "unsolvable_walled_pacman.txt": {
-        "title": "Vô nghiệm: Pacman bị nhốt",
-        "tag": "VÔ NGHIỆM",
-        "tag_color": (148, 163, 184),
-        "desc": "Pacman bị nhốt trong phòng kín, kiểm tra phát hiện không có lời giải ngay lập tức sau 1 node.",
+        "desc": "Bản đồ 11x17 có nhiều ngõ cụt sâu và vòng lặp kèm 1 Ghost; kiểm tra hàm đánh giá (evaluation function) tránh bị dồn vào đường cụt.",
     },
     "no_solution_map.txt": {
-        "title": "Bản đồ không có đường tới đích",
-        "tag": "VÔ NGHIỆM",
+        "title": "Vô nghiệm - Bản đồ nhỏ (9x9)",
+        "tag": "VÔ NGHIỆM (NHỎ)",
         "tag_color": (148, 163, 184),
-        "desc": "Tường ngăn cách giữa Pacman và Goal, kiểm tra tính năng xử lý vô nghiệm.",
+        "desc": "Bản đồ nhỏ 9x9 có đường tới Goal bị tường bịt kín hoàn toàn; kiểm tra thuật toán dừng đúng và trả về None an toàn.",
+    },
+    "single_large_many_unsolvable.txt": {
+        "title": "Vô nghiệm - Mê cung lớn (31x41)",
+        "tag": "VÔ NGHIỆM (LỚN)",
+        "tag_color": (100, 116, 139),
+        "desc": "Mê cung lớn 31x41 nhiều vật cản có Goal bị tường bao kín bốn phía; kiểm tra tốc độ vét cạn không gian trạng thái lớn khi không có lời giải.",
     },
 }
 
@@ -406,12 +352,6 @@ class MapBrowserModal:
                 if char == "#":
                     pygame.draw.rect(surface, WALL_FILL, t_rect)
                     pygame.draw.rect(surface, WALL_BORDER, t_rect, width=1)
-                elif char == "~":
-                    pygame.draw.rect(surface, (20, 52, 92), t_rect)
-                    pygame.draw.rect(surface, (38, 88, 145), t_rect, width=1)
-                elif char == "S":
-                    pygame.draw.rect(surface, (62, 42, 22), t_rect)
-                    pygame.draw.rect(surface, (105, 75, 42), t_rect, width=1)
                 else:
                     pygame.draw.rect(surface, (14, 17, 28), t_rect)
 
@@ -446,7 +386,7 @@ class MapBrowserModal:
         pygame.draw.rect(surface, (16, 185, 129), self.confirm_btn_rect, border_radius=4)
         pygame.draw.rect(surface, (110, 231, 183), self.confirm_btn_rect, width=1, border_radius=4)
         font_btn = get_font("badge")
-        btn_txt = font_btn.render("CHỌN VÀO GAME", True, (15, 23, 42))
+        btn_txt = font_btn.render("▶ CHỌN VÀO GAME", True, (15, 23, 42))
         surface.blit(btn_txt, btn_txt.get_rect(center=self.confirm_btn_rect.center))
 
     def _wrap_text(self, text, font, max_width):

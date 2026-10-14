@@ -1,203 +1,185 @@
-# DỰ ÁN 1 — PACMAN: TÌM KIẾM VÀ TRÒ CHƠI ĐỐI KHÁNG
-**Học phần:** Biểu diễn tri thức và tìm kiếm nâng cao (UET.AI2014)  
-**Nhóm thực hiện:** Nhóm 07  
+# 🎮 DỰ ÁN 1: PACMAN AI SEARCH & ĐỐI KHÁNG
+
+> **Môn học:** Biểu diễn tri thức và Tìm kiếm  
+> **Đơn vị:** Trường Đại học Công nghệ – ĐHQGHN (VNU-UET)  
+> **Nhóm thực hiện:** Nhóm 07
 
 ---
 
-## 1. Danh Sách Thành Viên (Nhóm 07)
-| STT | Họ và Tên | Mã Sinh Viên | Vai trò / Phân công |
-|---|---|---|---|
-| 1 | [Họ Tên Thành Viên 1] | [MSV 1] | Nhóm trưởng, Thiết kế kiến trúc & Classic Search (DFS, BFS, UCS, Greedy, A*) |
-| 2 | [Họ Tên Thành Viên 2] | [MSV 2] | Multi-Goal Search & Heuristic MST (Phần mở rộng 1) |
-| 3 | [Họ Tên Thành Viên 3] | [MSV 3] | Adversarial Search (Minimax, Alpha-Beta) & Cải tiến Eval Function (Phần mở rộng 2) |
-| 4 | [Họ Tên Thành Viên 4] | [MSV 4] | Giao diện đồ họa Pygame Vintage Arcade, Benchmark & Kiểm thử (Unit Tests) |
+## 📌 1. Giới thiệu tổng quan
+Dự án mô phỏng trò chơi kinh điển **Pacman**, ứng dụng các thuật toán Trí tuệ Nhân tạo trong tìm kiếm đường đi và trò chơi đối kháng nhiều tác tử (Multi-agent Game).
+
+Dự án gồm 2 phần trọng tâm:
+1. **Tìm kiếm cổ điển (Classic Search):**
+   - Hỗ trợ bản đồ **Đơn mục tiêu (Single-Goal)** và **Nhiều mục tiêu (Multi-Goal / Gom toàn bộ thức ăn)**.
+   - Hỗ trợ bản đồ có **trọng số địa hình (Weighted Terrains)**: Nước (`~`, chi phí 2) và Đầm lầy (`S`, chi phí 3).
+   - Triển khai 5 thuật toán: **DFS, BFS, UCS, Greedy Best-First Search, A\***.
+   - Heuristic tối ưu cho Multi-Goal kết hợp khoảng cách tới thức ăn gần nhất và **Cây khung nhỏ nhất (Minimum Spanning Tree - MST)**.
+
+2. **Tìm kiếm đối kháng (Adversarial Search):**
+   - Pacman (MAX agent) đối đầu với các Con ma / Ghost (MIN agents).
+   - Triển khai thuật toán **Minimax** và **Alpha-Beta Pruning**.
+   - Hàm đánh giá trạng thái (Evaluation Function) nâng cao:
+     * Khoảng cách mê cung thực tế (BFS Maze Distance) tới mục tiêu.
+     * Vùng an toàn đối với Ghost (Ghost Danger Zone).
+     * Tránh ngõ cụt (Dead-end Trap avoidance).
+     * Phạt lặp vị trí (Loop / Oscillation Penalty).
+
+3. **Giao diện người dùng (Vintage Arcade UI):**
+   - Đồ họa Pygame mang phong cách Cabinet Arcade thập niên 80-90.
+   - Hỗ trợ tương tác chuột 100%, chọn map trực quan, điều chỉnh tốc độ, chạy từng bước (Step-by-step), xem trước mini-map.
 
 ---
 
-## 2. Yêu Cầu Môi Trường & Cài Đặt
-- **Phiên bản Python:** Python 3.10 trở lên (khuyến nghị Python 3.11, 3.12 hoặc 3.13).
-- **Hệ điều hành:** Đã kiểm thử hoạt động ổn định trên Windows 10/11, macOS và Linux.
-- **Cài đặt thư viện:**
-  ```bash
-  pip install -r requirements.txt
-  ```
-  *(Các thư viện chính bao gồm: `pygame>=2.6.0` cho giao diện đồ họa, `reportlab>=4.0.0` xuất báo cáo).*
+## 📁 2. Cấu trúc thư mục dự án
 
----
-
-## 3. Cấu Trúc Mã Nguồn
 ```text
-P1_Nhom07/
-├── src/                                  # Mã nguồn logic & thuật toán AI
+P1_Nhom07_TEST_FIX/
+│
+├── main.py                     # Entrypoint chính: CLI tương tác, CLI dòng lệnh, khởi chạy UI
+├── requirements.txt            # Danh sách thư viện phụ thuộc (Pygame)
+├── README.md                   # Tài liệu hướng dẫn chi tiết dự án
+├── CONTRIBUTIONS.md            # Báo cáo phân công thành viên nhóm 07
+├── test_part.py                # Script chạy thử nhanh các thuật toán tìm kiếm
+│
+├── src/                        # Mã nguồn backend cốt lõi
+│   ├── search/                 # Module các thuật toán tìm kiếm cổ điển
+│   │   ├── pm_search_problem.py  # Định nghĩa không gian trạng thái tìm kiếm (Single-Goal)
+│   │   ├── multi_goal_search.py  # Bài toán tìm kiếm gom nhiều thức ăn (MST Heuristic)
+│   │   ├── dfs.py              # Depth-First Search
+│   │   ├── bfs.py              # Breadth-First Search
+│   │   ├── ucs.py              # Uniform-Cost Search
+│   │   ├── greedy.py           # Greedy Best-First Search
+│   │   └── a_star.py           # A* Search
+│   │
+│   ├── logic_pacman_vs_ghost/  # Module tìm kiếm đối kháng (Game Theory)
+│   │   ├── adv_problem.py      # Định nghĩa bài toán Pacman vs Ghost & Hàm heuristic evaluate()
+│   │   ├── minimax.py          # Thuật toán Minimax
+│   │   └── alpha_beta.py       # Thuật toán Alpha-Beta Pruning
+│   │
 │   ├── pacman/
-│   │   └── game_state.py                 # Biểu diễn trạng thái GameState
+│   │   └── game_state.py       # Biểu diễn trạng thái trò chơi (Vị trí P, Ghost, Thức ăn, Điểm)
 │   ├── ghost/
-│   │   └── ghost.py                      # Logic tác tử Ghost
-│   ├── search/                           # Thuật toán tìm kiếm kinh điển (Mục 3.2, 3.3, 3.4)
-│   │   ├── pm_search_problem.py          # Bài toán tìm đường đơn mục tiêu
-│   │   ├── multi_goal_search.py          # Bài toán gom nhiều thức ăn / Multi-Goal (MST)
-│   │   ├── dfs.py                        # Depth-First Search
-│   │   ├── bfs.py                        # Breadth-First Search
-│   │   ├── ucs.py                        # Uniform-Cost Search
-│   │   ├── greedy.py                     # Greedy Best-First Search
-│   │   └── a_star.py                     # A* Search
-│   ├── logic_pacman_vs_ghost/            # Tìm kiếm đối kháng (Mục 3.5)
-│   │   ├── adv_problem.py                # Bài toán đối kháng & Hàm đánh giá Evaluation
-│   │   ├── minimax.py                    # Minimax có giới hạn độ sâu
-│   │   └── alpha_beta.py                 # Alpha–Beta Pruning
+│   │   └── ghost.py            # Hành vi tác tử Ghost
 │   └── utils/
-│       ├── map_loader.py                 # Tải và tiền xử lý ma trận bản đồ
-│       ├── map_info.py                   # Trích xuất vị trí P, G, @, .
-│       ├── map_check_valid.py            # Kiểm định tính hợp lệ của bản đồ
-│       └── benchmark.py                  # Kịch bản tự động chạy thực nghiệm (Mục 5)
-├── ui/                                   # Giao diện đồ họa Vintage Arcade (Pygame)
-│   ├── main.py                           # Điểm kích hoạt Pygame UI
-│   ├── controller.py                     # Điều phối luồng và thuật toán
-│   ├── renderer.py                       # Vẽ mê cung, Pacman, ma và hiệu ứng
-│   ├── components.py                     # Nút bấm, panel chỉ số
-│   └── theme.py                          # Bảng màu Neon Arcade
-├── maps/                                 # Tập dữ liệu bản đồ thử nghiệm
-│   ├── test_map.txt                      # Bản đồ tiêu chuẩn có 2 Ghost
-│   ├── large_map.txt                     # Bản đồ lớn 19x22
-│   ├── multi_goal_test.txt               # Bản đồ nhiều mục tiêu (Multi-Goal)
-│   ├── multi_food_and_final_goal.txt     # Bản đồ gom thức ăn và về đích
-│   ├── terrain_cost_map.txt              # Bản đồ địa hình chi phí không đồng nhất (~, S)
-│   ├── adversarial_small.txt             # Bản đồ đối kháng nhỏ (1 Ghost)
-│   ├── adversarial_dead_end_trap.txt     # Bản đồ bẫy ngõ cụt kiểm thử né ma
-│   ├── no_solution_map.txt               # Bản đồ ngõ cụt bít kín (Unreachable)
-│   └── bad_map.txt                       # Bản đồ định dạng lỗi (Test validation)
-├── tests/                                # Bộ 43 Unit Tests tự động
-├── results/                              # Kết quả thực nghiệm (.csv, .txt)
-├── main.py                               # Điểm bắt đầu chính của chương trình
-├── requirements.txt                      # Thư viện phụ thuộc
-└── README.md                             # Hướng dẫn chi tiết
+│       ├── map_loader.py       # Đọc và phân tích file bản đồ text (.txt)
+│       ├── map_info.py         # Trích xuất tọa độ P, G, Food, Ghost & Chi phí địa hình
+│       ├── map_check_valid.py  # Kiểm tra tính hợp lệ của bản đồ
+│       └── benchmark.py        # Benchmark tự động đo thời gian & node mở rộng
+│
+├── ui/                         # Module giao diện đồ họa Vintage Arcade (Pygame)
+│   ├── main.py                 # Game loop Pygame, bắt sự kiện chuột & phím
+│   ├── controller.py           # Điều phối chạy nền (Threading) tránh treo UI
+│   ├── renderer.py             # Vẽ mê cung, vector Pacman há miệng, Ghost nhiều màu
+│   ├── components.py           # Button, Slider, Map Browser, Tabs, Log Box
+│   └── theme.py                # Palette màu Retro, font chữ hiển thị
+│
+├── maps/                       # Các file bản đồ (.txt) kịch bản kiểm thử
+├── results/                    # Kết quả đo đạc benchmark (CSV, TXT)
+└── tests/                      # Bộ 30 Unit Tests tự động (unittest)
 ```
 
 ---
 
-## 4. Hướng Dẫn Khởi Động & Sử Dụng Chương Trình
+## 🗺️ 3. Quy ước ký hiệu trên Bản đồ (.txt)
 
-Chương trình cung cấp 3 phương thức thực thi linh hoạt:
+| Ký hiệu | Ý nghĩa | Chi phí bước vào (Cost) |
+|:-------:|:--------|:-----------------------:|
+| `#` | Tường / Vật cản (Không thể đi vào) | $\infty$ |
+| ` ` | Đường đi trống trải | 1 |
+| `P` | Vị trí xuất phát của Pacman | 1 |
+| `.` | Viên thức ăn (Food pellet) | 1 |
+| `G` | Điểm đích (Goal) | 1 |
+| `@` | Vị trí ban đầu của Ghost (Con ma) | 1 |
+| `~` | Vùng nước ngập (Water) | **2** |
+| `S` | Vùng đầm lầy (Swamp) | **3** |
 
-### 4.1. Chạy Menu tương tác trực quan (Interactive Terminal)
-Chạy lệnh đơn giản nhất không cần tham số:
+---
+
+## 🚀 4. Hướng dẫn cài đặt & Khởi chạy
+
+### 4.1. Cài đặt môi trường
+Yêu cầu: **Python 3.10+** (đã kiểm thử ổn định trên Python 3.10 - 3.13).
+
+```bash
+# 1. Tạo môi trường ảo (khuyến nghị)
+python -m venv .venv
+
+# 2. Kích hoạt môi trường ảo:
+# Trên Windows PowerShell:
+.\.venv\Scripts\Activate.ps1
+# Trên Linux/macOS:
+# source .venv/bin/activate
+
+# 3. Cài đặt các thư viện cần thiết
+pip install -r requirements.txt
+```
+
+---
+
+### 4.2. Chạy Giao diện Đồ họa (GUI)
+Để trải nghiệm trực quan toàn bộ tính năng với giao diện Vintage Arcade:
+
+```bash
+python main.py --ui
+# Hoặc:
+python -m ui.main
+```
+
+**Các phím tắt trên giao diện:**
+- `Enter`: Bắt đầu mô phỏng (Start)
+- `Space`: Tạm dừng / Tiếp tục (Pause / Resume)
+- `S`: Đi duy nhất 1 bước (Step)
+- `R`: Đặt lại trạng thái ban đầu (Reset)
+- `Esc`: Thoát ứng dụng
+- `Cuộn chuột`: Cuộn nhật ký hoạt động (Log Box)
+
+---
+
+### 4.3. Chạy giao diện Dòng lệnh (CLI)
+
+#### Cách 1: Menu CLI tương tác (Interactive Terminal)
+Chạy trực tiếp file `main.py` không tham số:
 ```bash
 python main.py
 ```
-Hệ thống sẽ hiển thị menu điều hướng:
-1. **Chạy thuật toán trực quan trên Terminal:** Tự động quét toàn bộ bản đồ trong thư mục `maps/` hoặc cho phép nhập file map bất kỳ; chọn thuật toán tìm kiếm hoặc đối kháng; hiển thị chi tiết số bước, chi phí, số node duyệt, thời gian và bản đồ minh họa đường đi.
-2. **Khởi động Giao diện Đồ họa Arcade (Pygame UI):** Trải nghiệm giao diện tương tác trực quan.
-3. **Chạy toàn bộ Thực nghiệm Benchmark:** Tự động đo đạc số liệu theo Mục 5 đề bài.
+Hệ thống sẽ hiển thị menu cho phép bạn nhập số để chọn map và chọn thuật toán.
+
+#### Cách 2: Chạy trực tiếp 1 dòng lệnh (One-line CLI)
+Hỗ trợ kiểm thử nhanh hoặc tích hợp script tự động:
+
+* **Tìm kiếm đường đi cổ điển (DFS, BFS, UCS, GREEDY, ASTAR):**
+  ```bash
+  python main.py --map maps/cost_large_single.txt --algo ASTAR
+  python main.py --map maps/multi_large_many_solvable.txt --algo BFS
+  ```
+
+* **Chế độ đối kháng Pacman vs Ghost (MINIMAX, ALPHABETA):**
+  ```bash
+  # Mô phỏng cả trận (match) với độ sâu tìm kiếm depth=2:
+  python main.py --map maps/adversarial_small.txt --algo MINIMAX --depth 2
+
+  # Tối ưu thời gian duyệt bằng cắt tỉa Alpha-Beta:
+  python main.py --map maps/adversarial_small.txt --algo ALPHABETA --depth 3
+
+  # Tính toán gợi ý duy nhất 1 nước đi tiếp theo (step):
+  python main.py --map maps/adversarial_small.txt --algo ALPHABETA --depth 2 --mode step
+  ```
 
 ---
 
-### 4.2. Khởi động Giao diện Đồ họa (GUI Pygame)
-Khởi động trực tiếp giao diện đồ họa bằng cờ `--ui`:
-```bash
-python main.py --ui
-```
-**Tính năng giao diện:**
-- Chọn bản đồ linh hoạt (hỗ trợ kéo duyệt hoặc thêm bản đồ mới).
-- Chọn thuật toán tìm đường: DFS, BFS, UCS, Greedy, A* (Heuristic đề xuất), A* (h=0).
-- Chọn thuật toán đối kháng: Minimax, Alpha-Beta (chỉnh được độ sâu depth 1–5).
-- Các nút điều khiển: **Start**, **Pause**, **Step** (chạy từng bước để phân tích), **Reset**, **Tăng/Giảm tốc độ**.
-- Bảng hiển thị thông số thời gian thực: Trạng thái (WIN/LOSE/RUNNING), Số bước, Chi phí đường đi, Số trạng thái mở rộng, Thời gian tính toán.
+### 4.4. Chạy Benchmark & Kiểm thử tự động
 
----
+* **Chạy kiểm thử toàn bộ 30 Unit Tests:**
+  ```bash
+  python -m unittest discover tests
+  ```
 
-### 4.3. Chạy Dòng Lệnh Không Giao Diện (CLI Mode)
-Dành cho người chấm hoặc tự động hóa kiểm thử mà không cần thao tác tay:
-
-#### A. Tìm kiếm kinh điển (Classic Search):
-```bash
-# A* Search trên bản đồ chuẩn
-python main.py --map maps/test_map.txt --algo ASTAR
-
-# A* Search với h=0 (Baseline đối chứng với UCS theo Mục 5.2)
-python main.py --map maps/test_map.txt --algo ASTAR_H0
-
-# Uniform-Cost Search (UCS)
-python main.py --map maps/test_map.txt --algo UCS
-
-# Breadth-First Search (BFS)
-python main.py --map maps/test_map.txt --algo BFS
-
-# Depth-First Search (DFS)
-python main.py --map maps/test_map.txt --algo DFS
-
-# Greedy Best-First Search
-python main.py --map maps/test_map.txt --algo GREEDY
-
-# Kiểm tra bản đồ không có lời giải (Unreachable)
-python main.py --map maps/no_solution_map.txt --algo ASTAR
-
-# Kiểm tra bản đồ chi phí địa hình không đồng nhất (~, S)
-python main.py --map maps/terrain_cost_map.txt --algo UCS
-```
-
-#### B. Tìm kiếm đối kháng (Adversarial Search):
-Hỗ trợ 2 chế độ:
-- `--mode step`: Ra quyết định tối ưu ở bước đầu tiên (đo độ sâu, node xét, điểm eval, thời gian theo Mục 4).
-- `--mode match`: Mô phỏng toàn bộ trận đấu Pacman vs Ghost từng bước cho đến khi Thắng/Thua.
-
-```bash
-# Minimax ở độ sâu 2 (Step mode)
-python main.py --map maps/adversarial_small.txt --algo MINIMAX --depth 2 --mode step
-
-# Alpha-Beta Pruning ở độ sâu 2 (Step mode)
-python main.py --map maps/adversarial_small.txt --algo ALPHABETA --depth 2 --mode step
-
-# Alpha-Beta Pruning ở độ sâu 3 trên bản đồ 2 Ghost
-python main.py --map maps/test_map.txt --algo ALPHABETA --depth 3 --mode step
-
-# Mô phỏng cả trận đấu Pacman đối đầu Ghost
-python main.py --map maps/adversarial_small.txt --algo ALPHABETA --depth 2 --mode match
-```
-
----
-
-## 5. Tái Tạo Kết Quả Thực Nghiệm (Mục 5 Đề Bài)
-Để tái tạo toàn bộ số liệu thực nghiệm theo yêu cầu của Đề bài:
-```bash
-python main.py --benchmark
-# hoặc
-python src/utils/benchmark.py
-```
-Lệnh trên sẽ tự động chạy 3 phần thực nghiệm bắt buộc:
-1. **Mục 5.1:** So sánh DFS, BFS, UCS, Greedy, A* trên 6 dạng bản đồ (nhỏ, lớn, nhiều vật cản, ngõ cụt, không lời giải, chi phí không đồng nhất).
-2. **Mục 5.2:** Đánh giá Heuristic: So sánh UCS, A*(h=0) và A*(h đề xuất - MST/Manhattan), chứng minh tính tương đương UCS $\equiv$ A*(h=0) và độ cắt giảm node vượt trội của Heuristic đề xuất (giảm từ 10.3% đến 79.2% số node).
-3. **Mục 5.3:** Đánh giá Tìm kiếm đối kháng: So sánh Minimax và Alpha-Beta tại các mức độ sâu 1, 2, 3 trên 4 bản đồ khác nhau. Chứng minh tính tương đương về nước đi và điểm đánh giá (`MATCH`), cùng hiệu quả tỉ lệ cắt tỉa của Alpha-Beta lên đến **82%** số trạng thái.
-
-Kết quả được tự động lưu ra các file:
-- `results/search_benchmark.csv` & `results/search_benchmark.txt`
-- `results/heuristic_evaluation.txt`
-- `results/adversarial_benchmark.csv` & `results/adversarial_benchmark.txt`
-
----
-
-## 6. Chạy Kiểm Thử (Unit Tests)
-Dự án được xây dựng với bộ 43 bài test tự động bao quát toàn bộ chức năng:
-```bash
-python -m unittest discover tests
-```
-Tất cả 43 test đều vượt qua (`OK`).
-
----
-
-## 7. Các Phần Mở Rộng Của Nhóm (Mục 3.7)
-Nhóm 07 đã lựa chọn và cài đặt hoàn chỉnh **2 nội dung mở rộng thuật toán**:
-1. **Heuristic Cây khung nhỏ nhất (Prim MST) cho bài toán gom nhiều mục tiêu (Multi-Goal Search):**
-   - Đảm bảo tính **Admissible** và **Consistent**.
-   - Giúp A* giảm tới **79.2%** số node mở rộng so với UCS / A*(h=0).
-2. **Cải tiến Hàm đánh giá (Evaluation Function) trong Tìm kiếm đối kháng:**
-   - Bộ nhớ đệm khoảng cách mê cung BFS O(1) (`_MAZE_DIST_CACHE`).
-   - Nhận diện và phạt nặng nguy cơ rẽ vào bẫy ngõ cụt cụt đầu khi có Ghost bám đuổi.
-   - Phân loại Ghost chặn đầu mục tiêu và Ghost truy kích sau lưng.
-
----
-
-## 8. Trả Lời Về Cơ Chế Thức Ăn Đặc Biệt (Capsule) & Đề Bài
-- **Cơ chế capsule (ăn thức ăn đặc biệt để ma hóa xanh và Pacman quay lại ăn ma):**  
-  Theo **Mục 1 & Mục 2** của Đề bài, đề bài nêu rõ:  
-  > *"Không yêu cầu tái tạo đầy đủ trò chơi Pacman nguyên bản. Nhóm có thể bổ sung trọng số di chuyển, capsule, nhiều loại Ghost... nhưng các phần mở rộng không được làm thay đổi yêu cầu cốt lõi."*  
-  Do đó, việc ăn thức ăn đặc biệt để săn lại ma **hoàn toàn KHÔNG BẮT BUỘC**. Yêu cầu đối kháng cốt lõi là giải quyết bài toán Minimax, Alpha-Beta Pruning với giới hạn độ sâu và hàm đánh giá trạng thái né ma - ăn mục tiêu, đã được nhóm cài đặt hoàn chỉnh và chính xác.
+* **Chạy bộ Benchmark đo lường hiệu năng thuật toán:**
+  ```bash
+  python -m src.utils.benchmark
+  ```
+  Kết quả benchmark sẽ tự động xuất ra thư mục `results/` gồm các file:
+  - `results/search_benchmark.csv` & `.txt`
+  - `results/adversarial_benchmark.csv` & `.txt`
+  - `results/heuristic_evaluation.txt`

@@ -1,6 +1,7 @@
 from collections import deque
 from src.pacman.game_state import GameState
 
+
 class AdvProblem:
     """
     Bài toán đối kháng: Pacman (MAX agent) vs các Ghost (MIN agents).
@@ -13,6 +14,7 @@ class AdvProblem:
         self.target = target
         self.game_map = game_map
 
+        # Tính trước bảng khoảng cách mê cung (BFS) từ target tới mọi ô trống
         self.goal_distance_map = self._compute_bfs_distances(self.target)
 
     def _compute_bfs_distances(self, target_pos):
@@ -34,13 +36,16 @@ class AdvProblem:
             curr_r, curr_c = current_pos
             current_dist = distance_map[current_pos]
 
+            # Thử 4 hướng di chuyển: lên, xuống, trái, phải
             directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
             for dr, dc in directions:
                 next_r = curr_r + dr
                 next_c = curr_c + dc
 
+                # Kiểm tra biên bản đồ
                 if next_r >= 0 and next_r < len(self.game_map):
                     if next_c >= 0 and next_c < len(self.game_map[next_r]):
+                        # Không đi vào tường
                         if self.game_map[next_r][next_c] != "#":
                             neighbor = (next_r, next_c)
                             if neighbor not in distance_map:
@@ -92,6 +97,7 @@ class AdvProblem:
             return True
         return False
 
+    # Bộ nhớ đệm khoảng cách mê cung BFS để tra cứu tức thì O(1)
     _MAZE_DIST_CACHE = {}
 
     def get_maze_distance(self, pos1, pos2):
@@ -114,18 +120,23 @@ class AdvProblem:
         Đầu vào: state (đối tượng GameState), depth (độ sâu còn lại).
         Đầu ra: điểm số đánh giá (float / int). Điểm càng cao càng có lợi cho Pacman.
         """
+        # Trạng thái kết thúc: Pacman bị bắt -> phạt nặng hơn nếu chết sớm
         if state.check_pacman_caught():
             return -100000 - depth * 1000
 
+        # Trạng thái kết thúc: Pacman tới đích -> thưởng chiến thắng sớm hơn
         if state.pacman_position == self.target:
             return 100000 + depth * 1000
 
         pacman_r, pacman_c = state.pacman_position
 
+        # Khoảng cách mê cung thực tế từ Pacman đến mục tiêu
         dist_goal = self.goal_distance_map.get(state.pacman_position, 999)
 
+        # Điểm cơ sở theo khoảng cách tới mục tiêu (trọng số cao để ưu tiên tiến về đích)
         score = -dist_goal * 40
 
+        # Tính toán ảnh hưởng của Ghost nếu có Ghost trên bản đồ
         if len(state.ghost_positions) > 0:
             min_ghost_dist = float("inf")
             blocking_dist = float("inf")
@@ -143,7 +154,9 @@ class AdvProblem:
                     if dist < chasing_dist:
                         chasing_dist = dist
 
+            # 1. Nguy cơ va chạm trực tiếp trong bước kế tiếp (khoảng cách <= 1)
             if min_ghost_dist <= 1:
+                # Kiểm tra xem Pacman có lối thoát hợp lệ hướng về đích không
                 has_escape = False
                 for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                     nr, nc = state.pacman_position[0] + dr, state.pacman_position[1] + dc
@@ -155,8 +168,10 @@ class AdvProblem:
                 if not has_escape:
                     score -= 50000
                 else:
+                    # Pacman đang dẫn trước và có lối thoát mở về phía đích -> chỉ trừ nhẹ để không hoảng loạn quay đầu
                     score -= 500
 
+            # 2. Ghost chặn trước mặt / ở gần Goal hơn Pacman (nguy cơ bị chặn họng)
             if blocking_dist == 2:
                 score -= 15000
             elif blocking_dist == 3:
@@ -164,6 +179,7 @@ class AdvProblem:
             elif blocking_dist == 4:
                 score -= 1000
 
+            # 3. Ghost bám đuổi phía sau (Pacman đang dẫn trước trong cuộc đua về đích)
             if chasing_dist >= 2:
                 score += min(chasing_dist, 6) * 10
 

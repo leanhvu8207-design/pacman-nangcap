@@ -5,6 +5,7 @@ from ui.controller import GameController
 from ui.renderer import MazeRenderer
 from ui.theme import init_fonts, GHOST_COLORS, COLOR_PACMAN
 
+
 class TestUIController(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -33,6 +34,7 @@ class TestUIController(unittest.TestCase):
     def test_classic_search_astar(self):
         self.controller.set_map_file("maps/test_map.txt")
         self.controller.set_algorithm("A*")
+        # Chạy trực tiếp hàm search
         self.controller._run_classic_search()
         self.assertEqual(self.controller.status, "WIN")
         self.assertIsNotNone(self.controller.expanded_count)
@@ -50,10 +52,13 @@ class TestUIController(unittest.TestCase):
         self.assertIsNotNone(self.controller.expanded_count)
 
     def test_color_rules(self):
+        # Kiểm tra quy tắc bắt buộc: Pacman vàng, không có ghost nào màu vàng
         self.assertEqual(COLOR_PACMAN, (255, 214, 10))
         for g_color in GHOST_COLORS:
             self.assertNotEqual(g_color, COLOR_PACMAN)
+            # Kiểm tra không ghost nào thuộc họ vàng thuần
             self.assertFalse(g_color[0] > 200 and g_color[1] > 200 and g_color[2] < 50)
+
 
     def test_path_trail_recording(self):
         self.controller.set_map_file("maps/test_map.txt")
@@ -68,9 +73,12 @@ class TestUIController(unittest.TestCase):
         renderer = MazeRenderer(viewport)
         renderer.compute_layout(self.controller.game_map)
         surf = pygame.Surface((400, 400))
+        # Test vẽ trail khi đang chạy và khi win
         sample_trail = [(1, 1), (1, 2), (2, 2), (3, 2)]
         renderer.draw_path_trail(surf, sample_trail, is_win=False)
         renderer.draw_path_trail(surf, sample_trail, is_win=True)
+        # Không có ngoại lệ nào xảy ra
+
 
 if __name__ == "__main__":
     unittest.main()

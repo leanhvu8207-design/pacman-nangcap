@@ -1,8 +1,5 @@
 import time
-
 class AlphaBeta:
-    """Thuật toán Alpha-Beta Pruning: Cắt tỉa nhánh tìm kiếm cho Minimax."""
-
     def __init__(self, problem, depth_limit, recent_positions=None):
         self.problem = problem
         self.depth_limit = depth_limit
@@ -27,10 +24,17 @@ class AlphaBeta:
         for next_state, action in successors:
             self.expanded_count += 1
             next_agent = self.problem.get_next_agent(0)
-            next_depth = self.depth_limit - 1 if next_agent == 0 else self.depth_limit
+
+            # Nếu không có Ghost (next_agent == 0), giảm độ sâu 
+            # Nếu có Ghost, giữ nguyên độ sâu để các Ghost đi hết chu kỳ hiện tại
+            if next_agent == 0:
+                next_depth = self.depth_limit - 1
+            else:
+                next_depth = self.depth_limit
 
             value = self._alpha_beta_value(next_state, next_depth, next_agent, alpha, beta)
 
+            # Phạt nếu đi vào ô vừa đi qua nhiều lần trong các bước gần đây
             revisit_pen = 0
             if next_state.pacman_position in self.recent_positions:
                 count = self.recent_positions.count(next_state.pacman_position)
@@ -53,32 +57,44 @@ class AlphaBeta:
         return best_action
 
     def _alpha_beta_value(self, state, depth, agent, alpha, beta):
-        if self.problem.is_terminal(state) or depth <= 0:
+        # Điều kiện dừng: game kết thúc hoặc đã đạt độ sâu tối đa
+        if self.problem.is_terminal(state):
+            return self.problem.evaluate(state, depth)
+        if depth <= 0:
             return self.problem.evaluate(state, depth)
 
+        # Lượt của Pacman (MAX node)
         if agent == 0:
             best = float("-inf")
             successors = self.problem.get_successors_for_agent(state, agent)
             for next_state, _action in successors:
                 self.expanded_count += 1
                 next_agent = self.problem.get_next_agent(agent)
-                next_depth = depth - 1 if next_agent == 0 else depth
+                if next_agent == 0:
+                    next_depth = depth - 1
+                else:
+                    next_depth = depth
                 value = self._alpha_beta_value(next_state, next_depth, next_agent, alpha, beta)
 
                 if value > best:
                     best = value
                 if best > alpha:
                     alpha = best
+                
                 if beta <= alpha:
                     break
             return best
 
+        # Lượt của Ghost (MIN node)
         best = float("inf")
         successors = self.problem.get_successors_for_agent(state, agent)
         for next_state, _action in successors:
             self.expanded_count += 1
             next_agent = self.problem.get_next_agent(agent)
-            next_depth = depth - 1 if next_agent == 0 else depth
+            if next_agent == 0:
+                next_depth = depth - 1
+            else:
+                next_depth = depth
             value = self._alpha_beta_value(next_state, next_depth, next_agent, alpha, beta)
 
             if value < best:

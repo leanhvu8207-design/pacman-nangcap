@@ -9,8 +9,9 @@ import time
 import threading
 from collections import deque
 
+# Import các thành phần từ backend hiện có
 from src.utils.map_loader import load_map
-from src.utils.map_info import get_map_info
+from src.utils.map_info import get_map_info, get_tile_cost
 
 from src.search.pm_search_problem import PMSearchProblem
 from src.search.multi_goal_search import MultiGoal
@@ -33,28 +34,33 @@ from ui.theme import (
     COLOR_PACMAN,
 )
 
+
 class GameController:
     """Quản lý nạp map, điều phối thuật toán và vòng lặp mô phỏng UI không block giao diện"""
 
     def __init__(self, log_callback=None):
         self.log_callback = log_callback
 
+        # Danh sách map
         self.map_files = self._scan_maps()
         self.current_map_file = "maps/test_map.txt" if "maps/test_map.txt" in self.map_files else (self.map_files[0] if self.map_files else "")
         self.game_map = None
 
+        # Dữ liệu trích xuất từ map
         self.spawn = None
         self.goals = []
         self.ghosts = []
         self.foods = []
         self.initial_foods = set()
 
+        # Thuật toán và tham số
         self.algorithm = "A*"
         self.depth = 3
-        self.adv_mode = "MATCH"
-        self.speed = 1.0
+        self.adv_mode = "MATCH"  # "MATCH" (Full Simulation) hoặc "STEP" (1 nước)
+        self.speed = 1.0         # Tốc độ mô phỏng: 0.5x, 1x, 2x, 4x, 10x
 
-        self.status = "READY"
+        # Trạng thái runtime
+        self.status = "READY"    # READY, RUNNING, PAUSED, WIN, LOSE, ERROR
         self.pacman_pos = None
         self.ghost_positions = []
         self.remaining_foods = set()
@@ -62,31 +68,36 @@ class GameController:
         self.facing_dir = "RIGHT"
         self.path_trail = []
 
+        # Thống kê AI
         self.expanded_count = None
         self.time_used = None
         self.last_value = None
         self.steps_taken = 0
         self.path_cost = None
 
+        # Điều khiển đa luồng & vòng lặp mô phỏng
         self._thread = None
         self._stop_event = threading.Event()
         self._pause_event = threading.Event()
-        self._pause_event.set()
+        self._pause_event.set()  # Không pause khi mới bắt đầu
         self._step_trigger = threading.Event()
         self.is_stepping = False
 
+        # Lịch sử vị trí đối kháng để chống lặp
         self.lich_su_positions = []
         self.lich_su_actions = []
 
+        # Tải map khởi tạo
         if self.current_map_file:
             self.load_current_map()
 
     def _scan_maps(self):
         """Quét tất cả các file bản đồ trong thư mục maps/ (loại bỏ các file lỗi dành riêng cho unit test)"""
         maps = glob.glob("maps/*.txt")
+        # Chuẩn hóa dấu gạch chéo
         maps = [m.replace("\\", "/") for m in maps if not m.endswith("bad_map.txt")]
+        # Đưa các map tiêu chuẩn và đặc trưng lên đầu danh sách
         preferred = [
-            "maps/classic_pacman_arcade.txt",
             "maps/single_goal_small_open.txt",
             "maps/single_goal_dense_maze.txt",
             "maps/multi_food_four_corners.txt",
@@ -131,6 +142,7 @@ class GameController:
             self.log("Vui lòng kiểm tra cú pháp file bản đồ!", TEXT_MUTED)
             return False
 
+        # Trích xuất thông tin
         self.spawn, self.goals, self.ghosts, self.foods = get_map_info(self.game_map, return_foods=True)
         self.initial_foods = set(self.foods)
         self.reset_state()
@@ -202,10 +214,12 @@ class GameController:
             self.log("[LỖI] Chưa có bản đồ hợp lệ!", STATUS_COLORS["ERROR"])
             return
 
+        # Đặt lại state trước khi chạy
         self.reset_state()
         self.status = "RUNNING"
         self.log(f"--- BẮT ĐẦU CHẠY [{self.algorithm}] ---", (56, 189, 248))
 
+        # Khởi chạy luồng worker
         self._stop_event.clear()
         self._pause_event.set()
         self._step_trigger.clear()
@@ -234,6 +248,7 @@ class GameController:
     def step_forward(self):
         """Thực hiện duy nhất 1 bước (Hữu ích khi debug hoặc quan sát từng bước)"""
         if self.status == "READY":
+            # Bắt đầu và pause ngay
             self.start()
             self.pause()
             self.is_stepping = True
@@ -250,7 +265,6 @@ class GameController:
         """
         remaining = set(self.foods)
         curr = self.spawn
-        remaining.discard(curr)
         all_actions = []
         total_nodes = 0
         t0 = time.time()
@@ -259,10 +273,6 @@ class GameController:
             if self._stop_event.is_set():
                 return None, 0, 0
             next_food = min(remaining, key=lambda f: abs(curr[0] - f[0]) + abs(curr[1] - f[1]))
-            if curr == next_food:
-                remaining.discard(curr)
-                continue
-
             prob = PMSearchProblem(curr, next_food, self.game_map)
             if algo_name == "DFS": searcher = DFS(prob)
             elif algo_name == "BFS": searcher = BFS(prob)
@@ -271,13 +281,13 @@ class GameController:
             else: searcher = AStar(prob)
 
             sub_acts = searcher.search()
-            if sub_acts is None:
+            if not sub_acts:
                 break
             all_actions.extend(sub_acts)
             total_nodes += searcher.expanded_count
 
+            # Mô phỏng từng bước đi để loại bỏ các viên thức ăn ăn được dọc đường
             tr, tc = curr
-            remaining.discard((tr, tc))
             for act in sub_acts:
                 if act == "UP": tr -= 1
                 elif act == "DOWN": tr += 1
@@ -285,8 +295,8 @@ class GameController:
                 elif act == "RIGHT": tc += 1
                 remaining.discard((tr, tc))
             curr = (tr, tc)
-            remaining.discard(curr)
 
+        # Nếu có Goal cuối cùng sau khi đã ăn hết thức ăn
         if final_goal is not None and curr != final_goal and not self._stop_event.is_set():
             prob = PMSearchProblem(curr, final_goal, self.game_map)
             if algo_name == "DFS": searcher = DFS(prob)
@@ -295,13 +305,16 @@ class GameController:
             elif algo_name == "GREEDY": searcher = Greedy(prob)
             else: searcher = AStar(prob)
             sub_acts = searcher.search()
-            if sub_acts is not None:
+            if sub_acts:
                 all_actions.extend(sub_acts)
                 total_nodes += searcher.expanded_count
 
         time_used = time.time() - t0
         return all_actions, total_nodes, time_used
 
+    # ==========================================================================
+    # LUỒNG THUẬT TOÁN TÌM KIẾM CỔ ĐIỂN (CLASSIC SEARCH)
+    # ==========================================================================
     def _run_classic_search(self):
         if len(self.goals) == 0 and len(self.foods) == 0:
             self.log("[LỖI] Bản đồ không có Goal (G) hoặc Food (.)!", STATUS_COLORS["ERROR"])
@@ -311,6 +324,7 @@ class GameController:
         actions = None
         final_goal = self.goals[0] if len(self.goals) > 0 else None
 
+        # 1. Chế độ Multi-Food: Ăn hết toàn bộ thức ăn (và về Goal nếu có)
         if len(self.foods) > 0:
             if len(self.foods) <= 12:
                 problem = MultiGoal(self.spawn, tuple(self.foods), self.game_map, goal=final_goal)
@@ -324,13 +338,22 @@ class GameController:
                 actions = searcher.search()
                 self.expanded_count = searcher.expanded_count
                 self.time_used = searcher.time_used
-                if actions is not None:
+                if actions:
                     self.path_cost = problem.measure_path_cost(actions)
             else:
                 self.log(f"Đang lập kế hoạch gom sạch {len(self.foods)} thức ăn với {self.algorithm}...", TEXT_MUTED)
-                actions, self.expanded_count, self.time_used = self._plan_multi_food_tour(self.algorithm, final_goal=final_goal)
-                self.path_cost = len(actions) if actions is not None else None
+                if actions:
+                    curr_pos = self.spawn
+                    moves = {"UP": (-1, 0), "DOWN": (1, 0), "LEFT": (0, -1), "RIGHT": (0, 1)}
+                    total_c = 0
+                    for act in actions:
+                        curr_pos = (curr_pos[0] + moves[act][0], curr_pos[1] + moves[act][1])
+                        total_c += get_tile_cost(curr_pos, self.game_map)
+                    self.path_cost = total_c
+                else:
+                    self.path_cost = None
 
+        # 2. Chế độ Multi-Goal: Đi qua tất cả các ô Goal (G)
         elif len(self.goals) > 1:
             problem = MultiGoal(self.spawn, tuple(self.goals), self.game_map, goal=None)
             if self.algorithm == "DFS": searcher = DFS(problem)
@@ -343,9 +366,10 @@ class GameController:
             actions = searcher.search()
             self.expanded_count = searcher.expanded_count
             self.time_used = searcher.time_used
-            if actions is not None:
+            if actions:
                 self.path_cost = problem.measure_path_cost(actions)
 
+        # 3. Chế độ Single-Goal: Tìm đường tới 1 ô Goal (G)
         else:
             problem = PMSearchProblem(self.spawn, self.goals[0], self.game_map)
             if self.algorithm == "DFS": searcher = DFS(problem)
@@ -358,7 +382,7 @@ class GameController:
             actions = searcher.search()
             self.expanded_count = searcher.expanded_count
             self.time_used = searcher.time_used
-            if actions is not None:
+            if actions:
                 self.path_cost = problem.measure_path_cost(actions)
 
         if actions is None:
@@ -369,6 +393,7 @@ class GameController:
 
         self.log(f"Tìm thấy đường đi! Số bước: {len(actions)} | Chi phí: {self.path_cost} | Expanded: {self.expanded_count} | Thời gian: {round(self.time_used, 5)}s", STATUS_COLORS["WIN"])
 
+        # Di chuyển Pacman theo chuỗi hành động actions
         curr_r, curr_c = self.spawn
         trail = [(curr_r, curr_c)]
         self.path_trail = trail
@@ -377,6 +402,7 @@ class GameController:
             if self._stop_event.is_set():
                 return
 
+            # Xử lý Pause & Step trigger
             while not self._pause_event.is_set():
                 if self._stop_event.is_set():
                     return
@@ -385,6 +411,7 @@ class GameController:
                     break
                 time.sleep(0.04)
 
+            # Thực hiện bước đi
             self.facing_dir = act
             if act == "UP":
                 curr_r -= 1
@@ -400,6 +427,7 @@ class GameController:
             self.path_trail = list(trail)
             self.steps_taken = i + 1
 
+            # Ăn food hoặc thu thập goal nếu có
             if (curr_r, curr_c) in self.remaining_foods:
                 self.remaining_foods.remove((curr_r, curr_c))
                 self.score += 10
@@ -412,6 +440,7 @@ class GameController:
             else:
                 self.log(f"Bước {i+1}: Đi {act} -> {(curr_r, curr_c)}", TEXT_BODY)
 
+            # Delay tương ứng với tốc độ
             delay = max(0.02, 0.25 / max(0.1, self.speed))
             time.sleep(delay)
 
@@ -439,12 +468,16 @@ class GameController:
                         queue.append((nr, nc))
         return min(foods, key=lambda f: abs(current_pos[0] - f[0]) + abs(current_pos[1] - f[1]))
 
+    # ==========================================================================
+    # LUỒNG THUẬT TOÁN ĐỐI KHÁNG (MINIMAX / ALPHA-BETA)
+    # ==========================================================================
     def _run_adversarial_search(self):
         if len(self.goals) == 0 and len(self.foods) == 0:
             self.log("[LỖI] Bản đồ cần có ít nhất 1 Goal (G) hoặc Food (.)!", STATUS_COLORS["ERROR"])
             self.status = "ERROR"
             return
 
+        # Xác định mục tiêu ban đầu: ưu tiên ăn hết Food trước, sau đó mới tới Goal cuối cùng
         if len(self.remaining_foods) > 0:
             target = self._find_nearest_food(self.spawn, self.remaining_foods)
         elif len(self.remaining_goals) > 0:
@@ -452,6 +485,7 @@ class GameController:
         else:
             target = None
 
+        # CHẾ ĐỘ 1: Chỉ tính nước đi tốt nhất ở bước đầu tiên
         if self.adv_mode == "STEP":
             prob = AdvProblem(self.spawn, self.ghosts, target, self.game_map)
             ai = Minimax(prob, self.depth) if self.algorithm == "MINIMAX" else AlphaBeta(prob, self.depth)
@@ -465,6 +499,7 @@ class GameController:
 
             self.log(f"Nước đi tốt nhất: {action} | Eval: {ai.last_value} | Nodes: {ai.expanded_count} | Time: {round(ai.time_used, 5)}s", STATUS_COLORS["WIN"])
             if action:
+                # Thực hiện 1 bước duy nhất
                 self.facing_dir = action
                 r, c = self.spawn
                 if action == "UP": r -= 1
@@ -474,16 +509,11 @@ class GameController:
                 self.pacman_pos = (r, c)
                 self.steps_taken = 1
                 self.path_trail = [self.spawn, (r, c)]
-
-                if self.pacman_pos in self.remaining_goals:
-                    self.remaining_goals.remove(self.pacman_pos)
-                if self.pacman_pos in self.remaining_foods:
-                    self.remaining_foods.remove(self.pacman_pos)
-
             da_het_muc_tieu = len(self.remaining_goals) == 0 and len(self.remaining_foods) == 0
             self.status = "WIN" if (self.pacman_pos == target and da_het_muc_tieu) else "READY"
             return
 
+        # CHẾ ĐỘ 2: Mô phỏng trận đấu nhiều bước
         state = GameState(self.spawn, self.ghosts.copy(), set(self.foods), 0, self.game_map)
         buoc = 0
         max_steps = max(100, len(self.initial_foods) * 4 if len(self.initial_foods) > 0 else 60)
@@ -500,6 +530,7 @@ class GameController:
             if self._stop_event.is_set():
                 return
 
+            # Xử lý Pause & Step trigger
             while not self._pause_event.is_set():
                 if self._stop_event.is_set():
                     return
@@ -508,6 +539,7 @@ class GameController:
                     break
                 time.sleep(0.04)
 
+            # Cập nhật mục tiêu hiện tại: ưu tiên ăn hết Food trước, sau đó mới tới Goal cuối cùng
             if len(state.food) > 0:
                 target = self._find_nearest_food(state.pacman_position, state.food)
             elif len(self.remaining_goals) > 0:
@@ -542,6 +574,7 @@ class GameController:
             self.facing_dir = act
             self.lich_su_actions.append(act)
 
+            # Cập nhật state game
             prev_food_count = len(self.remaining_foods)
             is_final = (len(state.food) == 0 and len(self.remaining_goals) <= 1)
             state = state.step(act, target, is_final_goal=is_final)
@@ -569,11 +602,13 @@ class GameController:
                 self.score += 20
                 self.log(f"  Đã thu thập Goal tại {state.pacman_position}! Còn lại {len(self.remaining_goals)} Goal.", (52, 211, 153))
 
+            # Kiểm tra trạng thái kết thúc
             if state.status == "LOSE":
                 self.status = "LOSE"
                 self.log(">>> THUA CUỘC: PACMAN ĐÃ BỊ GHOST BẮT! <<<", STATUS_COLORS["LOSE"])
                 break
 
+            # Kiểm tra xem đã hoàn thành toàn bộ mục tiêu chưa
             da_het_goal = len(self.remaining_goals) == 0
             da_het_food = len(state.food) == 0
             if da_het_goal and da_het_food:
@@ -581,8 +616,10 @@ class GameController:
                 self.log(">>> CHIẾN THẮNG: PACMAN ĐÃ HOÀN THÀNH TẤT CẢ MỤC TIÊU! <<<", STATUS_COLORS["WIN"])
                 break
             else:
+                # Đang thu thập dở dang thức ăn hoặc goal -> tiếp tục chơi
                 state.status = "PLAYING"
 
+            # Delay giữa các bước
             delay = max(0.04, 0.4 / max(0.1, self.speed))
             time.sleep(delay)
 

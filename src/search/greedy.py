@@ -1,9 +1,11 @@
 import time
 import heapq
 
-class Greedy:
-    """Tìm kiếm tham lam (Greedy Best-First Search) theo hàm heuristic h(n)."""
+"""
+Mở rộng node có giá trị hàm heuristic h(n) nhỏ nhất (ước lượng gần đích nhất).
+"""
 
+class Greedy:
     def __init__(self, problem):
         self.problem = problem
         self.expanded_count = 0
@@ -27,12 +29,12 @@ class Greedy:
                 continue
 
             visited.add(state)
+            self.expanded_count += 1
 
             if self.problem.reached_target(state):
                 self.time_used = time.time() - start_time
                 return actions
 
-            self.expanded_count += 1
             successors = self.problem.expand_pacman_moves(state)
 
             for new_state, next_act, move_cost in successors:

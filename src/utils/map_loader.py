@@ -10,6 +10,7 @@ def load_map(file_path):
             for line in file:
                 raw_lines.append(line.rstrip("\r\n"))
 
+        
         while len(raw_lines) > 0 and raw_lines[-1].strip() == "":
             raw_lines.pop()
 

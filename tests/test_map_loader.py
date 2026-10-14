@@ -3,6 +3,7 @@ from src.utils.map_loader import load_map
 from src.utils.map_info import get_map_info
 from src.utils.map_check_valid import check_map
 
+
 class TestMapLoader(unittest.TestCase):
     def test_load_valid_map(self):
         game_map = load_map("maps/adversarial_small.txt")
@@ -31,8 +32,9 @@ class TestMapLoader(unittest.TestCase):
         self.assertEqual(goals, [(9, 1)])
         self.assertEqual(ghosts, [(9, 15)])
 
+        # Kiểm tra trích xuất foods (.)
         s, g, gh, foods = get_map_info(game_map, return_foods=True)
-        self.assertEqual(sorted(foods), sorted([(5, 19), (9, 2)]))
+        self.assertEqual(foods, [(5, 19), (9, 2)])
 
     def test_load_large_map(self):
         lg_map = load_map("maps/large_map.txt")
@@ -45,6 +47,7 @@ class TestMapLoader(unittest.TestCase):
         self.assertIsNotNone(ns_map)
         self.assertEqual(len(ns_map), 9)
         self.assertEqual(len(ns_map[0]), 9)
+
 
 if __name__ == "__main__":
     unittest.main()

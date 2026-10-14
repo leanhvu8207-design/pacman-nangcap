@@ -26,6 +26,7 @@ from ui.theme import (
     COLOR_PACMAN,
 )
 
+
 class Button:
     """Nút bấm phong cách arcade cổ điển, hỗ trợ hover, active và click bằng chuột"""
 
@@ -33,7 +34,7 @@ class Button:
         self.rect = pygame.Rect(rect)
         self.text = text
         self.on_click = on_click
-        self.variant = variant
+        self.variant = variant  # "default", "start", "stop", "pause", "tab"
         self.font_key = font_key
         self.tooltip = tooltip
         self.is_hovered = False
@@ -54,6 +55,7 @@ class Button:
         return False
 
     def draw(self, surface):
+        # Chọn màu nền theo trạng thái
         if self.is_disabled:
             bg_col = (25, 29, 45)
             text_col = (90, 100, 125)
@@ -79,17 +81,21 @@ class Button:
             text_col = TEXT_HEADER if self.is_hovered else TEXT_BODY
             border_col = BORDER_HIGHLIGHT if self.is_hovered else BORDER_COLOR
 
+        # Vẽ hộp nút bo góc
         pygame.draw.rect(surface, bg_col, self.rect, border_radius=5)
         pygame.draw.rect(surface, border_col, self.rect, width=2, border_radius=5)
 
+        # Hiệu ứng gờ sáng trên nút (Arcade button bevel)
         if not self.is_disabled and not self.is_active:
             highlight = pygame.Rect(self.rect.x + 2, self.rect.y + 1, self.rect.width - 4, 1)
             pygame.draw.rect(surface, (255, 255, 255, 40), highlight)
 
+        # Vẽ text ở giữa
         font = get_font(self.font_key)
         rendered_text = font.render(self.text, True, text_col)
         text_rect = rendered_text.get_rect(center=self.rect.center)
         surface.blit(rendered_text, text_rect)
+
 
 class ButtonGroup:
     """Nhóm các nút bấm (như chọn thuật toán hoặc chế độ) có thể chọn 1 mục"""
@@ -134,6 +140,7 @@ class ButtonGroup:
         for btn, _ in self.buttons:
             btn.draw(surface)
 
+
 class NumberStepper:
     """Bộ điều khiển tăng giảm số nguyên (+ / -) bằng chuột, dùng cho Depth"""
 
@@ -145,6 +152,7 @@ class NumberStepper:
         self.value = initial_val
         self.on_change = on_change
 
+        # Tạo nút - và +
         btn_w = 26
         btn_h = self.rect.height
         self.btn_minus = Button(
@@ -177,6 +185,7 @@ class NumberStepper:
         return hit
 
     def draw(self, surface):
+        # Nền giữa
         mid_rect = pygame.Rect(
             self.btn_minus.rect.right + 2,
             self.rect.y,
@@ -186,14 +195,17 @@ class NumberStepper:
         pygame.draw.rect(surface, BG_PANEL_ALT, mid_rect, border_radius=4)
         pygame.draw.rect(surface, BORDER_COLOR, mid_rect, width=1, border_radius=4)
 
+        # Chữ hiển thị
         font = get_font("subtitle")
         display_text = f"{self.label}: {self.value}"
         rendered = font.render(display_text, True, TEXT_HEADER)
         rendered_rect = rendered.get_rect(center=mid_rect.center)
         surface.blit(rendered, rendered_rect)
 
+        # Vẽ 2 nút
         self.btn_minus.draw(surface)
         self.btn_plus.draw(surface)
+
 
 class MapSelector:
     """Bộ chọn bản đồ có mũi tên điều hướng, nút xem trước toàn cảnh (Preview) và tên file hiện tại"""
@@ -273,6 +285,7 @@ class MapSelector:
         mouse_pos = pygame.mouse.get_pos()
         is_hover = self.mid_rect.collidepoint(mouse_pos)
 
+        # Hộp hiển thị tên file
         box_bg = (24, 30, 48) if is_hover else BG_PANEL_ALT
         box_border = BORDER_HIGHLIGHT if is_hover else BORDER_COLOR
         pygame.draw.rect(surface, box_bg, self.mid_rect, border_radius=4)
@@ -291,17 +304,19 @@ class MapSelector:
         self.btn_next.draw(surface)
         self.btn_preview.draw(surface)
 
+
 class ScrollableLogBox:
     """Bảng nhật ký hoạt động có thể cuộn bằng chuột (Mouse Wheel / Nút cuộn)"""
 
     def __init__(self, rect, max_lines=200):
         self.rect = pygame.Rect(rect)
-        self.logs = []
+        self.logs = []  # List of tuples: (text, color)
         self.max_lines = max_lines
         self.scroll_offset = 0
         self.line_height = 17
         self.auto_scroll = True
 
+        # Nút cuộn lên / xuống nhỏ
         btn_size = 18
         self.btn_up = Button(
             pygame.Rect(self.rect.right - btn_size - 2, self.rect.y + 2, btn_size, btn_size),
@@ -345,6 +360,7 @@ class ScrollableLogBox:
         return max(1, (self.rect.height - 8) // self.line_height)
 
     def handle_event(self, event):
+        # Cuộn bằng con lăn chuột
         if event.type == pygame.MOUSEWHEEL:
             if self.rect.collidepoint(pygame.mouse.get_pos()):
                 if event.y > 0:
@@ -365,9 +381,11 @@ class ScrollableLogBox:
         return False
 
     def draw(self, surface):
+        # Vẽ nền hộp log (Dark CRT terminal look)
         pygame.draw.rect(surface, (14, 16, 24), self.rect, border_radius=4)
         pygame.draw.rect(surface, BORDER_COLOR, self.rect, width=1, border_radius=4)
 
+        # Cắt clip vùng vẽ text để không tràn ra ngoài
         clip_rect = pygame.Rect(self.rect.x + 6, self.rect.y + 4, self.rect.width - 28, self.rect.height - 8)
         prev_clip = surface.get_clip()
         surface.set_clip(clip_rect)
@@ -387,9 +405,11 @@ class ScrollableLogBox:
 
         surface.set_clip(prev_clip)
 
+        # Vẽ nút cuộn nhỏ
         self.btn_up.draw(surface)
         self.btn_down.draw(surface)
 
+        # Vẽ thanh scrollbar nhỏ bên phải
         if len(self.logs) > vis_count:
             bar_track_h = self.rect.height - 44
             thumb_h = max(10, int(bar_track_h * (vis_count / len(self.logs))))

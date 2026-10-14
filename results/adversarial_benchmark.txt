@@ -1,17 +1,20 @@
 ===============================================================================================
-BANG KET QUA THUC NGHIEM SO SANH MINIMAX VA ALPHA-BETA PRUNING
+BANG KET QUA THUC NGHIEM SO SANH MINIMAX VA ALPHA-BETA PRUNING (NHOM 07)
 ===============================================================================================
 Map                        | Depth | Action | Value    | MM Nodes | AB Nodes | Pruning %  | Speedup 
 -----------------------------------------------------------------------------------------------
-adversarial_dead_end_trap  | 1     | DOWN   | -39900   | 6        | 6        | 0.0      % | 4.33   x
-adversarial_dead_end_trap  | 2     | DOWN   | -39900   | 30       | 22       | 26.7     % | 2.17   x
-adversarial_dead_end_trap  | 3     | DOWN   | -39900   | 134      | 60       | 55.2     % | 2.5    x
-adversarial_small          | 1     | UP     | -15620   | 12       | 11       | 8.3      % | 11.33  x
-adversarial_small          | 2     | UP     | -15660   | 78       | 55       | 29.5     % | 5.73   x
-adversarial_small          | 3     | UP     | -15700   | 557      | 250      | 55.1     % | 2.94   x
-test_map (2 Ghosts)        | 1     | DOWN   | -780     | 20       | 20       | 0.0      % | 2.83   x
-test_map (2 Ghosts)        | 2     | DOWN   | -740     | 212      | 182      | 14.2     % | 1.47   x
-test_map (2 Ghosts)        | 3     | DOWN   | -700     | 2507     | 1208     | 51.8     % | 1.29   x
-large_map (3 Ghosts)       | 1     | DOWN   | -820     | 24       | 16       | 33.3     % | 12.8   x
-large_map (3 Ghosts)       | 2     | DOWN   | -780     | 384      | 152      | 60.4     % | 4.23   x
-large_map (3 Ghosts)       | 3     | DOWN   | -740     | 6684     | 1200     | 82.0     % | 5.57   x
+adversarial_single_ghost_corridor | 1     | RIGHT  | -540     | 8        | 8        | 0.0      % | 8.33   x
+adversarial_single_ghost_corridor | 2     | RIGHT  | -500     | 60       | 42       | 30.0     % | 3.0    x
+adversarial_single_ghost_corridor | 3     | RIGHT  | -540     | 411      | 197      | 52.1     % | 2.21   x
+adversarial_two_ghosts_pincer | 1     | LEFT   | -380     | 26       | 16       | 38.5     % | 3.9    x
+adversarial_two_ghosts_pincer | 2     | LEFT   | -340     | 426      | 185      | 56.6     % | 3.25   x
+adversarial_two_ghosts_pincer | 3     | LEFT   | -300     | 4986     | 1574     | 68.4     % | 3.61   x
+adversarial_dead_end_trap  | 1     | DOWN   | -39900   | 6        | 5        | 16.7     % | 4.0    x
+adversarial_dead_end_trap  | 2     | DOWN   | -39900   | 30       | 17       | 43.3     % | 2.89   x
+adversarial_dead_end_trap  | 3     | DOWN   | -39900   | 134      | 44       | 67.2     % | 2.95   x
+test_map (2 Ghosts)        | 1     | DOWN   | -780     | 20       | 13       | 35.0     % | 4.12   x
+test_map (2 Ghosts)        | 2     | DOWN   | -740     | 212      | 115      | 45.8     % | 2.3    x
+test_map (2 Ghosts)        | 3     | DOWN   | -700     | 2507     | 772      | 69.2     % | 3.82   x
+large_map (3 Ghosts)       | 1     | LEFT   | -900     | 16       | 12       | 25.0     % | 8.89   x
+large_map (3 Ghosts)       | 2     | LEFT   | -860     | 376      | 148      | 60.6     % | 5.08   x
+large_map (3 Ghosts)       | 3     | LEFT   | -820     | 7096     | 1608     | 77.3     % | 4.52   x
