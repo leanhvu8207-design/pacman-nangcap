@@ -32,4 +32,6 @@ jobs:
     # 4. Tự động chạy thử file main.py để xem có văng lỗi không
     - name: Run main script test
       run: |
-        python main.py
+        python main.py --map maps/test_map.txt --algo BFS
+
+

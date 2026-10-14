@@ -9,10 +9,7 @@ class GameState:
         self.score = score
         self.game_map = game_map
         self.status = status
-    """
-    Tạo 1 state mới để lưu vị trí mới
-    """
-        
+    
     def copy_pacman_position(self, new_position):
         return GameState(new_position,self.ghost_positions,
                         self.food,self.score,self.game_map)
@@ -40,7 +37,6 @@ class GameState:
     
     def move(self, action):
         r, c = self.pacman_position
-
         if action == "UP":
             r -= 1
         elif action == "DOWN":
@@ -135,13 +131,13 @@ class GameState:
     """
     Check Pacman & Ghost ở next_state
     1) Ko có gì xảy ra => state mới đc thêm vào 
-    2) Vachạm =>  
+    2) Vachạm =>  dừng
     """
     
     def check_pacman_caught(self):
         return self.pacman_position in self.ghost_positions
     
-    def step(self, pacman_action, target):
+    def step(self, pacman_action, target, is_final_goal=False):
         next_state = self.move(pacman_action)
         if next_state is None:
             return None
@@ -151,18 +147,22 @@ class GameState:
             next_state.status = "LOSE"
             return next_state
 
-        # Pacman tới đích
-        if next_state.pacman_position == target:
+        # Pacman tới đích cuối cùng (khi đã hoàn thành hết food hoặc được chỉ định là final goal)
+        if next_state.pacman_position == target and (is_final_goal or len(next_state.food) == 0):
             next_state.status = "WIN"
             return next_state
 
         # Cho từng Ghost di chuyển
         for ghost_index in range(len(next_state.ghost_positions)):
             ghost = Ghost(next_state.ghost_positions[ghost_index])
+            other_ghosts = [
+                pos for idx, pos in enumerate(next_state.ghost_positions) if idx != ghost_index
+            ]
 
             ghost_action = ghost.choose_action(
                 next_state.game_map,
-                next_state.pacman_position
+                next_state.pacman_position,
+                other_ghost_positions=other_ghosts
             )
             if ghost_action is None:
                 continue
