@@ -3,12 +3,12 @@ BANG KET QUA THUC NGHIEM SO SANH MINIMAX VA ALPHA-BETA PRUNING (NHOM 07)
 ==================================================================================================
 Map                          | Depth | Action | Value    | MM Nodes | AB Nodes | Pruning %  | Speedup 
 --------------------------------------------------------------------------------------------------
-adversarial_small (1 Ghost)  | 1     | UP     | -15620   | 12       | 11       | 8.3      % | 8.0    x
-adversarial_small (1 Ghost)  | 2     | UP     | -15660   | 78       | 55       | 29.5     % | 4.87   x
-adversarial_small (1 Ghost)  | 3     | UP     | -15700   | 557      | 250      | 55.1     % | 2.58   x
-dead_end_maze (1 Ghost)      | 1     | DOWN   | -380     | 6        | 5        | 16.7     % | 7.0    x
-dead_end_maze (1 Ghost)      | 2     | DOWN   | -340     | 30       | 21       | 30.0     % | 7.29   x
-dead_end_maze (1 Ghost)      | 3     | DOWN   | -300     | 126      | 65       | 48.4     % | 2.37   x
-large_map (3 Ghosts)         | 1     | DOWN   | -820     | 24       | 16       | 33.3     % | 18.0   x
-large_map (3 Ghosts)         | 2     | DOWN   | -780     | 384      | 152      | 60.4     % | 5.68   x
-large_map (3 Ghosts)         | 3     | DOWN   | -740     | 6684     | 1200     | 82.0     % | 5.12   x
+adversarial_small (1 Ghost)  | 1     | UP     | -15620   | 12       | 11       | 8.3      % | 9.17   x
+adversarial_small (1 Ghost)  | 2     | UP     | -15660   | 78       | 55       | 29.5     % | 5.05   x
+adversarial_small (1 Ghost)  | 3     | UP     | -15700   | 557      | 250      | 55.1     % | 1.85   x
+dead_end_maze (1 Ghost)      | 1     | DOWN   | -380     | 6        | 5        | 16.7     % | 11.0   x
+dead_end_maze (1 Ghost)      | 2     | DOWN   | -340     | 30       | 21       | 30.0     % | 6.23   x
+dead_end_maze (1 Ghost)      | 3     | DOWN   | -300     | 126      | 65       | 48.4     % | 3.33   x
+large_map (3 Ghosts)         | 1     | DOWN   | -820     | 24       | 16       | 33.3     % | 12.57  x
+large_map (3 Ghosts)         | 2     | DOWN   | -780     | 384      | 152      | 60.4     % | 4.09   x
+large_map (3 Ghosts)         | 3     | DOWN   | -740     | 6684     | 1200     | 82.0     % | 4.99   x

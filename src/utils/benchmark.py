@@ -87,9 +87,10 @@ def apply_cost_mode(problem, gmap, spawn, cost_mode="weighted"):
                 return orig_measure_path_cost(actions)
         return total_cost
 
-    problem.get_step_cost = custom_step_cost
-    problem.step_cost = custom_step_cost
-    problem.measure_path_cost = custom_measure_path_cost
+    if cost_mode == "uniform":
+        problem.cost_fn = lambda pos: 1
+    else:
+        problem.cost_fn = lambda pos: cell_cost(pos[0], pos[1])
     return problem
 
 

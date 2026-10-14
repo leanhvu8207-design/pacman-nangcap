@@ -1,31 +1,31 @@
 map,algo,found,steps,cost,nodes,time_ms
-single_small_few_solvable,DFS,True,50,50,51,0.352
-single_small_few_solvable,BFS,True,18,18,79,0.856
-single_small_few_solvable,UCS,True,18,18,79,0.739
-single_small_few_solvable,Greedy,True,18,18,19,0.117
-single_small_few_solvable,A*,True,18,18,79,0.531
-dead_end_maze,DFS,True,24,24,25,0.117
-dead_end_maze,BFS,True,12,12,25,0.117
-dead_end_maze,UCS,True,12,12,25,0.123
-dead_end_maze,Greedy,True,12,12,13,0.062
-dead_end_maze,A*,True,12,12,15,0.23
-large_map (Single-Goal),DFS,True,85,85,180,1.615
-large_map (Single-Goal),BFS,True,23,23,175,1.507
-large_map (Single-Goal),UCS,True,23,23,175,1.476
-large_map (Single-Goal),Greedy,True,23,23,26,0.273
-large_map (Single-Goal),A*,True,23,23,65,0.412
-no_solution_map,DFS,False,-1,-1,6,0.062
-no_solution_map,BFS,False,-1,-1,6,0.044
-no_solution_map,UCS,False,-1,-1,6,0.175
-no_solution_map,Greedy,False,-1,-1,6,0.061
-no_solution_map,A*,False,-1,-1,6,0.046
-multi_goal_test,DFS,True,65,65,71,0.392
-multi_goal_test,BFS,True,27,27,256,1.258
-multi_goal_test,UCS,True,27,27,256,2.554
-multi_goal_test,Greedy,True,27,27,113,0.861
-multi_goal_test,A*,True,27,27,110,0.89
-multi_large_many_solvable,DFS,True,584,584,1027,7.683
-multi_large_many_solvable,BFS,True,188,188,19229,135.423
-multi_large_many_solvable,UCS,True,188,188,19229,144.029
-multi_large_many_solvable,Greedy,True,248,248,9186,92.373
-multi_large_many_solvable,A*,True,188,188,14896,149.25
+single_small_few_solvable,DFS,True,50,50,51,0.525
+single_small_few_solvable,BFS,True,18,18,79,0.739
+single_small_few_solvable,UCS,True,18,18,79,0.792
+single_small_few_solvable,Greedy,True,18,18,19,0.208
+single_small_few_solvable,A*,True,18,18,79,0.606
+dead_end_maze,DFS,True,24,24,25,0.2
+dead_end_maze,BFS,True,12,12,25,0.219
+dead_end_maze,UCS,True,12,12,25,0.211
+dead_end_maze,Greedy,True,12,12,13,0.119
+dead_end_maze,A*,True,12,12,15,0.141
+large_map (Single-Goal),DFS,True,85,85,180,2.281
+large_map (Single-Goal),BFS,True,23,23,175,1.749
+large_map (Single-Goal),UCS,True,23,23,175,2.519
+large_map (Single-Goal),Greedy,True,23,23,26,0.324
+large_map (Single-Goal),A*,True,23,23,65,0.596
+no_solution_map,DFS,False,-1,-1,6,0.088
+no_solution_map,BFS,False,-1,-1,6,0.065
+no_solution_map,UCS,False,-1,-1,6,0.069
+no_solution_map,Greedy,False,-1,-1,6,0.083
+no_solution_map,A*,False,-1,-1,6,0.089
+multi_goal_test,DFS,True,65,65,71,0.365
+multi_goal_test,BFS,True,27,27,256,1.623
+multi_goal_test,UCS,True,27,27,256,1.406
+multi_goal_test,Greedy,True,27,27,113,1.704
+multi_goal_test,A*,True,27,27,110,1.764
+multi_large_many_solvable,DFS,True,584,584,1027,8.548
+multi_large_many_solvable,BFS,True,188,188,19229,115.488
+multi_large_many_solvable,UCS,True,188,188,19229,169.259
+multi_large_many_solvable,Greedy,True,248,248,9186,89.482
+multi_large_many_solvable,A*,True,188,188,14896,150.009
