@@ -11,7 +11,7 @@ class TestMapLoader(unittest.TestCase):
         self.assertEqual(len(game_map), 11)
         self.assertEqual(len(game_map[0]), 21)
 
-        test_map = load_map("maps/test_map.txt")
+        test_map = load_map("maps/multi_goal_test.txt")
         self.assertIsNotNone(test_map)
         self.assertEqual(len(test_map), 9)
         self.assertEqual(len(test_map[0]), 15)

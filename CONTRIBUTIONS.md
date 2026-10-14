@@ -1,6 +1,9 @@
-# BÁO CÁO PHÂN CÔNG CÔNG VIỆC VÀ MỨC ĐỘ ĐÓNG GÓP (CONTRIBUTIONS)
-**Dự án 1 - Pacman: Tìm kiếm và trò chơi đối kháng**
-**Nhóm thực hiện: Nhóm 07**
+# Báo cáo phân công công việc và mức độ đóng góp (CONTRIBUTIONS)
+
+- **Dự án 1:** Pacman - Tìm kiếm và trò chơi đối kháng  
+- **Môn học:** Biểu diễn tri thức và tìm kiếm nâng cao (UET.AI2014_5)  
+- **Đơn vị:** Trường Đại học Công nghệ - ĐHQGHN (UET-VNU)  
+- **Nhóm thực hiện:** Nhóm 07  
 
 ---
 
@@ -22,7 +25,3 @@
 | Khúc Hữu Trung | Viết các file của logic_pacman_vs_ghost, chỉnh sửa file main.py, fix các lỗi phát sinh, làm và kiểm thử map, viết file report.pdf | Hoàn thành |
 | Vũ Thành Thanh Tùng | Khởi tạo cấu trúc dự án, viết các file search, fix các lỗi phát sinh, chỉnh sửa file main.py và file game_state.py, làm và kiểm thử map | Hoàn thành |
 | Lê Anh Vũ | Làm file ghost.py, phụ trách các file của ui, fix các lỗi phát sinh, làm và kiểm thử map | Hoàn thành |
-
----
-
-## 3. 

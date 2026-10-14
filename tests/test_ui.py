@@ -18,10 +18,10 @@ class TestUIController(unittest.TestCase):
 
     def test_map_scanning(self):
         self.assertTrue(len(self.controller.map_files) >= 3)
-        self.assertIn("maps/test_map.txt", self.controller.map_files)
+        self.assertIn("maps/adversarial_small.txt", self.controller.map_files)
 
     def test_load_valid_map(self):
-        self.controller.set_map_file("maps/test_map.txt")
+        self.controller.set_map_file("maps/adversarial_small.txt")
         self.assertEqual(self.controller.status, "READY")
         self.assertIsNotNone(self.controller.spawn)
         self.assertTrue(len(self.controller.ghosts) >= 1)
@@ -32,7 +32,7 @@ class TestUIController(unittest.TestCase):
         self.assertEqual(self.controller.status, "ERROR")
 
     def test_classic_search_astar(self):
-        self.controller.set_map_file("maps/test_map.txt")
+        self.controller.set_map_file("maps/single_small_few_solvable.txt")
         self.controller.set_algorithm("A*")
         # Chạy trực tiếp hàm search
         self.controller._run_classic_search()
@@ -61,7 +61,7 @@ class TestUIController(unittest.TestCase):
 
 
     def test_path_trail_recording(self):
-        self.controller.set_map_file("maps/test_map.txt")
+        self.controller.set_map_file("maps/single_small_few_solvable.txt")
         self.controller.set_algorithm("A*")
         self.controller._run_classic_search()
         self.assertTrue(len(self.controller.path_trail) > 1)

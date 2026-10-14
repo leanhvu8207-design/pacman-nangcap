@@ -1,108 +1,109 @@
-# 🎮 DỰ ÁN 1: PACMAN AI SEARCH & ĐỐI KHÁNG
+# Dự án 1: Pacman - Tìm kiếm và trò chơi đối kháng
 
-> **Môn học:** Biểu diễn tri thức và Tìm kiếm  
-> **Đơn vị:** Trường Đại học Công nghệ – ĐHQGHN (VNU-UET)  
-> **Nhóm thực hiện:** Nhóm 07
+- **Môn học:** Biểu diễn tri thức và tìm kiếm nâng cao (UET.AI2014_5)
+- **Đơn vị:** Trường Đại học Công nghệ - ĐHQGHN (UET-VNU)
+- **Nhóm thực hiện:** Nhóm 07
+- Chi tiết thành viên và phân công công việc xem tại [CONTRIBUTIONS.md](CONTRIBUTIONS.md).
 
 ---
 
-## 📌 1. Giới thiệu tổng quan
-Dự án mô phỏng trò chơi kinh điển **Pacman**, ứng dụng các thuật toán Trí tuệ Nhân tạo trong tìm kiếm đường đi và trò chơi đối kháng nhiều tác tử (Multi-agent Game).
+## 1. Giới thiệu
 
-Dự án gồm 2 phần trọng tâm:
+Bài tập lớn mô phỏng lại trò chơi Pacman nhằm cài đặt và thử nghiệm các thuật toán tìm kiếm đường đi (Search) và tìm kiếm đối kháng (Adversarial Search):
+
 1. **Tìm kiếm cổ điển (Classic Search):**
-   - Hỗ trợ bản đồ **Đơn mục tiêu (Single-Goal)** và **Nhiều mục tiêu (Multi-Goal / Gom toàn bộ thức ăn)**.
-   - Hỗ trợ bản đồ có **trọng số địa hình (Weighted Terrains)**: Nước (`~`, chi phí 2) và Đầm lầy (`S`, chi phí 3).
-   - Triển khai 5 thuật toán: **DFS, BFS, UCS, Greedy Best-First Search, A\***.
-   - Heuristic tối ưu cho Multi-Goal kết hợp khoảng cách tới thức ăn gần nhất và **Cây khung nhỏ nhất (Minimum Spanning Tree - MST)**.
+   - Hỗ trợ tìm đường đơn mục tiêu (Single-goal) và gom nhiều thức ăn (Multi-goal).
+   - Hỗ trợ bản đồ có trọng số địa hình: Nước (`~`, chi phí 2) và Đầm lầy (`S`, chi phí 3).
+   - Cài đặt 5 thuật toán: DFS, BFS, UCS, Greedy Best-First Search và A*.
+   - Với bài toán gom nhiều thức ăn (Multi-goal), hàm heuristic kết hợp khoảng cách đến thức ăn gần nhất và Cây khung nhỏ nhất (MST) để đảm bảo tính admissible và tìm được đường đi tối ưu.
 
 2. **Tìm kiếm đối kháng (Adversarial Search):**
-   - Pacman (MAX agent) đối đầu với các Con ma / Ghost (MIN agents).
-   - Triển khai thuật toán **Minimax** và **Alpha-Beta Pruning**.
-   - Hàm đánh giá trạng thái (Evaluation Function) nâng cao:
-     * Khoảng cách mê cung thực tế (BFS Maze Distance) tới mục tiêu.
-     * Vùng an toàn đối với Ghost (Ghost Danger Zone).
-     * Tránh ngõ cụt (Dead-end Trap avoidance).
-     * Phạt lặp vị trí (Loop / Oscillation Penalty).
+   - Mô phỏng đối đầu giữa Pacman (MAX) và các Ghost (MIN).
+   - Cài đặt thuật toán Minimax và Alpha-Beta Pruning.
+   - Hàm đánh giá trạng thái (Evaluation Function) tính toán dựa trên:
+     - Khoảng cách BFS thực tế trong mê cung tới thức ăn và Ghost.
+     - Giữ khoảng cách an toàn trước Ghost.
+     - Tránh đi vào ngõ cụt khi Ghost đang ở gần.
+     - Phạt điểm khi lặp vị trí (tránh việc Pacman đứng lắc qua lắc lại).
 
-3. **Giao diện người dùng (Vintage Arcade UI):**
-   - Đồ họa Pygame mang phong cách Cabinet Arcade thập niên 80-90.
-   - Hỗ trợ tương tác chuột 100%, chọn map trực quan, điều chỉnh tốc độ, chạy từng bước (Step-by-step), xem trước mini-map.
+3. **Giao diện:**
+   - Giao diện đồ họa bằng Pygame: hiển thị bản đồ trực quan, cho phép chọn thuật toán, điều chỉnh tốc độ, chạy từng bước (step), tạm dừng và theo dõi log.
+   - Giao diện dòng lệnh (CLI): hỗ trợ cả menu tương tác trực tiếp lẫn chạy qua tham số command-line.
 
 ---
 
-## 📁 2. Cấu trúc thư mục dự án
+## 2. Cấu trúc thư mục
 
 ```text
 P1_Nhom07_TEST_FIX/
-│
-├── main.py                     # Entrypoint chính: CLI tương tác, CLI dòng lệnh, khởi chạy UI
-├── requirements.txt            # Danh sách thư viện phụ thuộc (Pygame)
-├── README.md                   # Tài liệu hướng dẫn chi tiết dự án
-├── CONTRIBUTIONS.md            # Báo cáo phân công thành viên nhóm 07
+├── main.py                     # File chạy chính (CLI interactive, CLI có tham số, mở GUI)
+├── requirements.txt            # Thư viện phụ thuộc (pygame)
+├── README.md                   # Hướng dẫn sử dụng
+├── CONTRIBUTIONS.md            # Bảng phân công công việc của nhóm
 ├── test_part.py                # Script chạy thử nhanh các thuật toán tìm kiếm
 │
-├── src/                        # Mã nguồn backend cốt lõi
-│   ├── search/                 # Module các thuật toán tìm kiếm cổ điển
-│   │   ├── pm_search_problem.py  # Định nghĩa không gian trạng thái tìm kiếm (Single-Goal)
-│   │   ├── multi_goal_search.py  # Bài toán tìm kiếm gom nhiều thức ăn (MST Heuristic)
+├── src/                        # Mã nguồn thuật toán và logic trò chơi
+│   ├── search/                 # Các thuật toán tìm kiếm cổ điển
+│   │   ├── pm_search_problem.py  # Không gian trạng thái bài toán đơn mục tiêu
+│   │   ├── multi_goal_search.py  # Bài toán gom nhiều thức ăn (kèm MST heuristic)
 │   │   ├── dfs.py              # Depth-First Search
 │   │   ├── bfs.py              # Breadth-First Search
 │   │   ├── ucs.py              # Uniform-Cost Search
 │   │   ├── greedy.py           # Greedy Best-First Search
 │   │   └── a_star.py           # A* Search
 │   │
-│   ├── logic_pacman_vs_ghost/  # Module tìm kiếm đối kháng (Game Theory)
-│   │   ├── adv_problem.py      # Định nghĩa bài toán Pacman vs Ghost & Hàm heuristic evaluate()
+│   ├── logic_pacman_vs_ghost/  # Module tìm kiếm đối kháng
+│   │   ├── adv_problem.py      # Trạng thái đối kháng & hàm đánh giá evaluate()
 │   │   ├── minimax.py          # Thuật toán Minimax
-│   │   └── alpha_beta.py       # Thuật toán Alpha-Beta Pruning
+│   │   └── alpha_beta.py       # Thuật toán cắt tỉa Alpha-Beta
 │   │
 │   ├── pacman/
-│   │   └── game_state.py       # Biểu diễn trạng thái trò chơi (Vị trí P, Ghost, Thức ăn, Điểm)
+│   │   └── game_state.py       # Quản lý trạng thái trò chơi (tọa độ P, Ghost, Food, điểm)
 │   ├── ghost/
-│   │   └── ghost.py            # Hành vi tác tử Ghost
+│   │   └── ghost.py            # Logic di chuyển của Ghost
 │   └── utils/
-│       ├── map_loader.py       # Đọc và phân tích file bản đồ text (.txt)
-│       ├── map_info.py         # Trích xuất tọa độ P, G, Food, Ghost & Chi phí địa hình
-│       ├── map_check_valid.py  # Kiểm tra tính hợp lệ của bản đồ
-│       └── benchmark.py        # Benchmark tự động đo thời gian & node mở rộng
+│       ├── map_loader.py       # Đọc map từ file .txt
+│       ├── map_info.py         # Trích xuất dữ liệu map (P, G, Food, Ghost, chi phí ô)
+│       ├── map_check_valid.py  # Kiểm tra tính hợp lệ của map
+│       └── benchmark.py        # Đo thời gian chạy và số node mở rộng
 │
-├── ui/                         # Module giao diện đồ họa Vintage Arcade (Pygame)
-│   ├── main.py                 # Game loop Pygame, bắt sự kiện chuột & phím
-│   ├── controller.py           # Điều phối chạy nền (Threading) tránh treo UI
-│   ├── renderer.py             # Vẽ mê cung, vector Pacman há miệng, Ghost nhiều màu
-│   ├── components.py           # Button, Slider, Map Browser, Tabs, Log Box
-│   └── theme.py                # Palette màu Retro, font chữ hiển thị
+├── ui/                         # Giao diện đồ họa (Pygame)
+│   ├── main.py                 # Vòng lặp chính của giao diện
+│   ├── controller.py           # Điều khiển luồng chạy nền (threading) tránh đơ UI
+│   ├── renderer.py             # Vẽ map, Pacman, Ghost
+│   ├── components.py           # Các thành phần UI (nút bấm, slider, danh sách map, log box)
+│   └── theme.py                # Bảng màu và font hiển thị
 │
-├── maps/                       # Các file bản đồ (.txt) kịch bản kiểm thử
-├── results/                    # Kết quả đo đạc benchmark (CSV, TXT)
-└── tests/                      # Bộ 30 Unit Tests tự động (unittest)
+├── maps/                       # Các file map kiểm thử (.txt)
+├── results/                    # Kết quả chạy benchmark (CSV, TXT)
+└── tests/                      # Bộ unit tests
 ```
 
 ---
 
-## 🗺️ 3. Quy ước ký hiệu trên Bản đồ (.txt)
+## 3. Quy ước bản đồ (.txt)
 
-| Ký hiệu | Ý nghĩa | Chi phí bước vào (Cost) |
-|:-------:|:--------|:-----------------------:|
-| `#` | Tường / Vật cản (Không thể đi vào) | $\infty$ |
-| ` ` | Đường đi trống trải | 1 |
+| Ký hiệu | Ý nghĩa | Chi phí bước vào |
+|:-------:|:--------|:----------------:|
+| `#` | Tường / Vật cản (không thể đi qua) | Không thể đi |
+| ` ` | Đường đi trống | 1 |
 | `P` | Vị trí xuất phát của Pacman | 1 |
-| `.` | Viên thức ăn (Food pellet) | 1 |
-| `G` | Điểm đích (Goal) | 1 |
-| `@` | Vị trí ban đầu của Ghost (Con ma) | 1 |
-| `~` | Vùng nước ngập (Water) | **2** |
-| `S` | Vùng đầm lầy (Swamp) | **3** |
+| `.` | Thức ăn (Food) | 1 |
+| `G` | Đích đến (Goal) | 1 |
+| `@` | Vị trí xuất phát của Ghost | 1 |
+| `~` | Vùng nước (Water) | 2 |
+| `S` | Vùng đầm lầy (Swamp) | 3 |
 
 ---
 
-## 🚀 4. Hướng dẫn cài đặt & Khởi chạy
+## 4. Cài đặt và chạy chương trình
 
 ### 4.1. Cài đặt môi trường
-Yêu cầu: **Python 3.10+** (đã kiểm thử ổn định trên Python 3.10 - 3.13).
+
+Yêu cầu Python 3.10 trở lên.
 
 ```bash
-# 1. Tạo môi trường ảo (khuyến nghị)
+# 1. Tạo môi trường ảo (tùy chọn)
 python -m venv .venv
 
 # 2. Kích hoạt môi trường ảo:
@@ -111,75 +112,77 @@ python -m venv .venv
 # Trên Linux/macOS:
 # source .venv/bin/activate
 
-# 3. Cài đặt các thư viện cần thiết
+# 3. Cài đặt các thư viện cần thiết:
 pip install -r requirements.txt
 ```
 
 ---
 
-### 4.2. Chạy Giao diện Đồ họa (GUI)
-Để trải nghiệm trực quan toàn bộ tính năng với giao diện Vintage Arcade:
+### 4.2. Chạy giao diện đồ họa (GUI)
+
+Để mở giao diện trực quan bằng Pygame:
 
 ```bash
 python main.py --ui
-# Hoặc:
+```
+Hoặc:
+```bash
 python -m ui.main
 ```
 
-**Các phím tắt trên giao diện:**
-- `Enter`: Bắt đầu mô phỏng (Start)
-- `Space`: Tạm dừng / Tiếp tục (Pause / Resume)
-- `S`: Đi duy nhất 1 bước (Step)
+Một số phím tắt trong giao diện:
+- `Enter`: Bắt đầu chạy
+- `Space`: Tạm dừng / Tiếp tục
+- `S`: Đi từng bước một (Step)
 - `R`: Đặt lại trạng thái ban đầu (Reset)
-- `Esc`: Thoát ứng dụng
-- `Cuộn chuột`: Cuộn nhật ký hoạt động (Log Box)
+- `Esc`: Thoát chương trình
+- `Cuộn chuột`: Cuộn xem các dòng trong ô nhật ký (Log)
 
 ---
 
-### 4.3. Chạy giao diện Dòng lệnh (CLI)
+### 4.3. Chạy giao diện dòng lệnh (CLI)
 
-#### Cách 1: Menu CLI tương tác (Interactive Terminal)
-Chạy trực tiếp file `main.py` không tham số:
+#### Cách 1: Menu tương tác
+Chạy trực tiếp lệnh bên dưới và làm theo menu lựa chọn hiển thị trên terminal:
 ```bash
 python main.py
 ```
-Hệ thống sẽ hiển thị menu cho phép bạn nhập số để chọn map và chọn thuật toán.
 
-#### Cách 2: Chạy trực tiếp 1 dòng lệnh (One-line CLI)
-Hỗ trợ kiểm thử nhanh hoặc tích hợp script tự động:
+#### Cách 2: Truyền tham số dòng lệnh
+Phù hợp khi cần chạy nhanh hoặc kiểm thử script:
 
-* **Tìm kiếm đường đi cổ điển (DFS, BFS, UCS, GREEDY, ASTAR):**
+- **Các thuật toán tìm kiếm đường đi (DFS, BFS, UCS, GREEDY, ASTAR):**
   ```bash
   python main.py --map maps/cost_large_single.txt --algo ASTAR
   python main.py --map maps/multi_large_many_solvable.txt --algo BFS
   ```
 
-* **Chế độ đối kháng Pacman vs Ghost (MINIMAX, ALPHABETA):**
+- **Chế độ đối kháng Pacman vs Ghost (MINIMAX, ALPHABETA):**
   ```bash
-  # Mô phỏng cả trận (match) với độ sâu tìm kiếm depth=2:
+  # Mô phỏng cả trận với độ sâu depth = 2:
   python main.py --map maps/adversarial_small.txt --algo MINIMAX --depth 2
 
-  # Tối ưu thời gian duyệt bằng cắt tỉa Alpha-Beta:
+  # Chạy thuật toán Alpha-Beta với depth = 3:
   python main.py --map maps/adversarial_small.txt --algo ALPHABETA --depth 3
 
-  # Tính toán gợi ý duy nhất 1 nước đi tiếp theo (step):
+  # Tính và in ra duy nhất 1 bước đi tiếp theo:
   python main.py --map maps/adversarial_small.txt --algo ALPHABETA --depth 2 --mode step
   ```
 
 ---
 
-### 4.4. Chạy Benchmark & Kiểm thử tự động
+### 4.4. Kiểm thử và Benchmark
 
-* **Chạy kiểm thử toàn bộ 30 Unit Tests:**
+- **Chạy toàn bộ unit test:**
   ```bash
   python -m unittest discover tests
   ```
 
-* **Chạy bộ Benchmark đo lường hiệu năng thuật toán:**
+- **Chạy đo hiệu năng thuật toán (Benchmark):**
   ```bash
   python -m src.utils.benchmark
   ```
-  Kết quả benchmark sẽ tự động xuất ra thư mục `results/` gồm các file:
-  - `results/search_benchmark.csv` & `.txt`
-  - `results/adversarial_benchmark.csv` & `.txt`
+  Kết quả benchmark sẽ được tự động xuất ra thư mục `results/`:
+  - `results/search_benchmark.csv` và `.txt`
+  - `results/adversarial_benchmark.csv` và `.txt`
   - `results/heuristic_evaluation.txt`
