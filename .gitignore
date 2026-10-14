@@ -5,3 +5,9 @@ venv/
 .env
 .vscode/
 .idea/
+
+# Reports and docs
+BAO_CAO_*
+bao_cao_*
+nhung_muc_*
+*.pdf
