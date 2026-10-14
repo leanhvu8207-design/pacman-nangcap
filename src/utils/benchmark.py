@@ -1,8 +1,14 @@
 """Tự động chạy thực nghiệm và xuất bảng so sánh hiệu năng thuật toán."""
 
 import os
+import sys
 import time
 import csv
+
+# Dam bao import duoc src khi chay file truc tiep
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 from src.utils.map_loader import load_map
 from src.utils.map_info import get_map_info
