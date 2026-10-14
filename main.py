@@ -14,161 +14,117 @@ from src.search.ucs import UCS
 from src.search.greedy import Greedy
 from src.search.a_star import AStar
 from src.pacman.game_state import GameState
-from src.logic_ghost.adv_problem import AdvProblem
-from src.logic_ghost.minimax import Minimax
-from src.logic_ghost.alpha_beta import AlphaBeta
+from src.logic_pacman_vs_ghost.adv_problem import AdvProblem
+from src.logic_pacman_vs_ghost.minimax import Minimax
+from src.logic_pacman_vs_ghost.alpha_beta import AlphaBeta
 
 
 def find_nearest_food(pos, food_set, game_map):
-    if len(food_set) == 0:
+    """
+    Tim vien thuc an gan nhat bang BFS theo khoang cach me cung thuc te.
+    """
+    if not food_set:
         return None
-    queue = deque()
-    queue.append(pos)
-    visited = set()
-    visited.add(pos)
-    move_directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-
-    while len(queue) > 0:
-        current_coord = queue.popleft()
-        if current_coord in food_set:
-            return current_coord
-        curr_r = current_coord[0]
-        curr_c = current_coord[1]
-
-        for dr, dc in move_directions:
-            nr = curr_r + dr
-            nc = curr_c + dc
-            if nr >= 0 and nr < len(game_map):
-                if nc >= 0 and nc < len(game_map[nr]):
-                    neighbor_coord = (nr, nc)
-                    cell_char = game_map[nr][nc]
-                    is_not_wall = cell_char != '#'
-                    is_unvisited = neighbor_coord not in visited
-                    if is_not_wall and is_unvisited:
-                        visited.add(neighbor_coord)
-                        queue.append(neighbor_coord)
-    best_food = None
-    min_manhattan_dist = float('inf')
-    pacman_r = pos[0]
-    pacman_c = pos[1]
-
-    for food_pos in food_set:
-        fr = food_pos[0]
-        fc = food_pos[1]
-        dist = abs(pacman_r - fr) + abs(pacman_c - fc)
-        if dist < min_manhattan_dist:
-            min_manhattan_dist = dist
-            best_food = food_pos
-    return best_food
-
+    queue = deque([pos])
+    visited = {pos}
+    while queue:
+        curr = queue.popleft()
+        if curr in food_set:
+            return curr
+        r, c = curr
+        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < len(game_map) and 0 <= nc < len(game_map[nr]):
+                if game_map[nr][nc] != "#" and (nr, nc) not in visited:
+                    visited.add((nr, nc))
+                    queue.append((nr, nc))
+    return min(food_set, key=lambda f: abs(pos[0] - f[0]) + abs(pos[1] - f[1]))
 
 def plan_multi_food_path(algo_name, spawn, foods, game_map, final_goal=None):
-    remaining_foods = set(foods)
-    current_position = spawn
-    remaining_foods.discard(current_position)
+    """
+    Lap ke hoach an sach toan bo thuc an bang cach tim duong lien tiep toi vien gan nhat.
+    Tu dong loai bo cac vien thuc an ma Pacman di qua tren duong di.
+    """
+    remaining = set(foods)
+    curr = spawn
+    remaining.discard(curr)
     all_actions = []
-    total_expanded_nodes = 0
-    start_time = time.time()
+    total_nodes = 0
+    t0 = time.time()
 
-    while len(remaining_foods) > 0:
-        next_food_target = None
-        min_dist = float('inf')
-        curr_r = current_position[0]
-        curr_c = current_position[1]
-
-        for food_pos in remaining_foods:
-            fr = food_pos[0]
-            fc = food_pos[1]
-            dist = abs(curr_r - fr) + abs(curr_c - fc)
-            if dist < min_dist:
-                min_dist = dist
-                next_food_target = food_pos
-        if current_position == next_food_target:
-            remaining_foods.discard(current_position)
+    while remaining:
+        next_food = min(remaining, key=lambda f: abs(curr[0] - f[0]) + abs(curr[1] - f[1]))
+        if curr == next_food:
+            remaining.discard(curr)
             continue
-        sub_problem = PMSearchProblem(current_position, next_food_target, game_map)
-        if algo_name == 'DFS':
-            searcher = DFS(sub_problem)
-        elif algo_name == 'BFS':
-            searcher = BFS(sub_problem)
-        elif algo_name == 'UCS':
-            searcher = UCS(sub_problem)
-        elif algo_name == 'GREEDY':
-            searcher = Greedy(sub_problem)
-        else:
-            searcher = AStar(sub_problem)
-        sub_actions = searcher.search()
-        if sub_actions is None:
+
+        prob = PMSearchProblem(curr, next_food, game_map)
+        if algo_name == "DFS": searcher = DFS(prob)
+        elif algo_name == "BFS": searcher = BFS(prob)
+        elif algo_name == "UCS": searcher = UCS(prob)
+        elif algo_name == "GREEDY": searcher = Greedy(prob)
+        else: searcher = AStar(prob)
+
+        sub_acts = searcher.search()
+        if sub_acts is None:
             break
-        all_actions.extend(sub_actions)
-        total_expanded_nodes = total_expanded_nodes + searcher.expanded_count
-        track_r = current_position[0]
-        track_c = current_position[1]
-        remaining_foods.discard((track_r, track_c))
+        all_actions.extend(sub_acts)
+        total_nodes += searcher.expanded_count
 
-        for act in sub_actions:
-            if act == 'UP':
-                track_r = track_r - 1
-            elif act == 'DOWN':
-                track_r = track_r + 1
-            elif act == 'LEFT':
-                track_c = track_c - 1
-            elif act == 'RIGHT':
-                track_c = track_c + 1
-            remaining_foods.discard((track_r, track_c))
-        current_position = (track_r, track_c)
-        remaining_foods.discard(current_position)
-    if final_goal is not None and current_position != final_goal:
-        sub_problem = PMSearchProblem(current_position, final_goal, game_map)
-        if algo_name == 'DFS':
-            searcher = DFS(sub_problem)
-        elif algo_name == 'BFS':
-            searcher = BFS(sub_problem)
-        elif algo_name == 'UCS':
-            searcher = UCS(sub_problem)
-        elif algo_name == 'GREEDY':
-            searcher = Greedy(sub_problem)
-        else:
-            searcher = AStar(sub_problem)
-        sub_actions = searcher.search()
-        if sub_actions is not None:
-            all_actions.extend(sub_actions)
-            total_expanded_nodes = total_expanded_nodes + searcher.expanded_count
-    elapsed_time = time.time() - start_time
-    return (all_actions, total_expanded_nodes, elapsed_time)
+        tr, tc = curr
+        remaining.discard((tr, tc))
+        for act in sub_acts:
+            if act == "UP": tr -= 1
+            elif act == "DOWN": tr += 1
+            elif act == "LEFT": tc -= 1
+            elif act == "RIGHT": tc += 1
+            remaining.discard((tr, tc))
+        curr = (tr, tc)
+        remaining.discard(curr)
 
+    if final_goal is not None and curr != final_goal:
+        prob = PMSearchProblem(curr, final_goal, game_map)
+        if algo_name == "DFS": searcher = DFS(prob)
+        elif algo_name == "BFS": searcher = BFS(prob)
+        elif algo_name == "UCS": searcher = UCS(prob)
+        elif algo_name == "GREEDY": searcher = Greedy(prob)
+        else: searcher = AStar(prob)
+        sub_acts = searcher.search()
+        if sub_acts is not None:
+            all_actions.extend(sub_acts)
+            total_nodes += searcher.expanded_count
+
+    time_used = time.time() - t0
+    return all_actions, total_nodes, time_used
 
 def in_ban_do(game_map, pacman_pos, ghost_positions, target_pos, remaining_food=None):
-    total_rows = len(game_map)
-
-    for r in range(total_rows):
-        row_str = ''
-        total_cols = len(game_map[r])
-
-        for c in range(total_cols):
+    """Hiển thị trạng thái ma trận bản đồ lên terminal."""
+    for r in range(len(game_map)):
+        dong = ""
+        for c in range(len(game_map[r])):
             pos = (r, c)
             if pos == pacman_pos:
-                row_str = row_str + 'P '
+                dong += "P "
             elif pos in ghost_positions:
-                row_str = row_str + '@ '
+                dong += "@ "
             elif pos == target_pos:
-                row_str = row_str + 'G '
+                dong += "G "
             elif remaining_food is not None:
                 if pos in remaining_food:
-                    row_str = row_str + '. '
+                    dong += ". "
                 else:
-                    char_in_map = game_map[r][c]
-                    if char_in_map in ['P', '@', 'G', '.']:
-                        row_str = row_str + '  '
+                    ky_tu = game_map[r][c]
+                    if ky_tu in ["P", "@", "G", "."]:
+                        dong += "  "
                     else:
-                        row_str = row_str + char_in_map + ' '
+                        dong += ky_tu + " "
             else:
-                char_in_map = game_map[r][c]
-                if char_in_map in ['P', '@', 'G']:
-                    row_str = row_str + '  '
+                ky_tu = game_map[r][c]
+                if ky_tu in ["P", "@", "G"]:
+                    dong += "  "
                 else:
-                    row_str = row_str + char_in_map + ' '
-        print('  ' + row_str)
+                    dong += ky_tu + " "
+        print("  " + dong)
 
 
 def main():

@@ -19,8 +19,8 @@ from src.utils.map_info import get_map_info
 from src.search.multi_goal_search import MultiGoal
 from src.search.ucs import UCS
 from src.search.a_star import AStar
-from src.logic_ghost.adv_problem import AdvProblem
-from src.logic_ghost.alpha_beta import AlphaBeta
+from src.logic_pacman_vs_ghost.adv_problem import AdvProblem
+from src.logic_pacman_vs_ghost.alpha_beta import AlphaBeta
 from src.pacman.game_state import GameState
 
 class TestAlgorithmExtensions(unittest.TestCase):
@@ -102,7 +102,7 @@ class TestAlgorithmExtensions(unittest.TestCase):
         """
         Kiểm tra thuật toán Alpha-Beta cắt tỉa hiệu quả và cho kết quả khớp 100% với Minimax.
         """
-        from src.logic_ghost.minimax import Minimax
+        from src.logic_pacman_vs_ghost.minimax import Minimax
         target = self.trap_goals[0]
         prob = AdvProblem(self.trap_spawn, self.trap_ghosts, target, self.adv_trap_map)
 

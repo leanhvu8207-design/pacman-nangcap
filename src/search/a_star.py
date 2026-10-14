@@ -1,67 +1,52 @@
-"""Thuật toán A* tìm đường đi ngắn nhất kết hợp chi phí thực tế và heuristic."""
-
 import time
 import heapq
 
-
 class AStar:
+    """Tìm kiếm A* tối ưu theo f(n) = g(n) + h(n)."""
+
     def __init__(self, problem):
         self.problem = problem
         self.expanded_count = 0
-        self.time_used = 0.0
+        self.time_used = 0
 
     def search(self):
         start_time = time.time()
         self.expanded_count = 0
 
-        start_state = self.problem.get_pacman_spawn()
-        initial_g = 0
-        initial_h = self.problem.heuristic(start_state)
-        initial_f = initial_g + initial_h
+        start = self.problem.get_pacman_spawn()
+        queue = []
 
-        priority_queue = []
+        g_n = 0
         counter = 0
-        initial_element = (initial_f, counter, initial_g, start_state, [])
-        heapq.heappush(priority_queue, initial_element)
+        h_n = self.problem.heuristic(start)
+        f_n = g_n + h_n
 
+        heapq.heappush(queue, (f_n, counter, g_n, start, []))
         visited = set()
 
-        while len(priority_queue) > 0:
-            current_element = heapq.heappop(priority_queue)
-            current_f = current_element[0]
-            _entry_index = current_element[1]
-            current_g = current_element[2]
-            current_state = current_element[3]
-            current_actions = current_element[4]
+        while len(queue) > 0:
+            f_n, _, g_n, state, actions = heapq.heappop(queue)
 
-            if current_state in visited:
+            if state in visited:
                 continue
-            visited.add(current_state)
 
-            if self.problem.reached_target(current_state):
-                end_time = time.time()
-                self.time_used = end_time - start_time
-                return current_actions
+            visited.add(state)
 
-            self.expanded_count = self.expanded_count + 1
-            successors = self.problem.expand_pacman_moves(current_state)
+            if self.problem.reached_target(state):
+                self.time_used = time.time() - start_time
+                return actions
 
-            for successor in successors:
-                next_state = successor[0]
-                next_action = successor[1]
-                move_cost = successor[2]
+            self.expanded_count += 1
+            successors = self.problem.expand_pacman_moves(state)
 
-                new_g = current_g + move_cost
-                new_h = self.problem.heuristic(next_state)
-                new_f = new_g + new_h
+            for next_state, next_action, move_cost in successors:
+                new_g_n = g_n + move_cost
+                new_h_n = self.problem.heuristic(next_state)
+                new_f_n = new_g_n + new_h_n
+                counter += 1
 
-                new_actions = list(current_actions)
-                new_actions.append(next_action)
+                new_actions = actions + [next_action]
+                heapq.heappush(queue, (new_f_n, counter, new_g_n, next_state, new_actions))
 
-                counter = counter + 1
-                next_element = (new_f, counter, new_g, next_state, new_actions)
-                heapq.heappush(priority_queue, next_element)
-
-        end_time = time.time()
-        self.time_used = end_time - start_time
+        self.time_used = time.time() - start_time
         return None

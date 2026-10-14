@@ -13,9 +13,9 @@ from src.search.bfs import BFS
 from src.search.ucs import UCS
 from src.search.greedy import Greedy
 from src.search.a_star import AStar
-from src.logic_ghost.adv_problem import AdvProblem
-from src.logic_ghost.minimax import Minimax
-from src.logic_ghost.alpha_beta import AlphaBeta
+from src.logic_pacman_vs_ghost.adv_problem import AdvProblem
+from src.logic_pacman_vs_ghost.minimax import Minimax
+from src.logic_pacman_vs_ghost.alpha_beta import AlphaBeta
 
 
 def run_search_benchmark():
