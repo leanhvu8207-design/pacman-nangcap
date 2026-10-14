@@ -48,8 +48,8 @@ class AlphaBeta:
                 best_action = action
                 best_dist = dist_to_goal
 
-            if value > alpha:
-                alpha = value
+            if adjusted_val > alpha:
+                alpha = adjusted_val - 1e-9
 
         self.chosen_action = best_action
         self.last_value = best_value
