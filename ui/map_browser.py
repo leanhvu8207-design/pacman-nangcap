@@ -28,161 +28,85 @@ from ui.theme import (
     GOAL_POINT,
     GOAL_BORDER,
     GHOST_COLORS,
-    WATER_FILL,
-    SWAMP_FILL,
     BTN_NORMAL,
     BTN_HOVER,
     BTN_ACTIVE,
 )
 
-# Từ điển mô tả chức năng kiểm thử của từng bản đồ
 MAP_METADATA = {
-    "single_goal_small_open.txt": {
-        "title": "Bản đồ nhỏ không gian mở (Small Open)",
-        "tag": "ĐƠN MỤC TIÊU",
+    "single_small_few_solvable.txt": {
+        "title": "Bản đồ nhỏ, ít vật cản (9x15)",
+        "tag": "ĐƠN MỤC TIÊU - MỞ",
         "tag_color": (56, 189, 248),
-        "desc": "Map ít vật cản, kiểm tra tính tối ưu của BFS, UCS, A* (cùng tìm ra 16 bước) so với DFS (24 bước) trên đường thẳng.",
-    },
-    "single_goal_dense_maze.txt": {
-        "title": "Mê cung vật cản dày đặc (Dense Maze)",
-        "tag": "ĐƠN MỤC TIÊU",
-        "tag_color": (56, 189, 248),
-        "desc": "Vật cản chằng chịt, kiểm tra khả năng luồn lách của A* heuristic Manhattan so với BFS qua nhiều ngã rẽ phức tạp.",
-    },
-    "cycles_and_loops.txt": {
-        "title": "Mê cung nhiều chu trình (Cycles & Loops)",
-        "tag": "CHU TRÌNH",
-        "tag_color": (168, 85, 247),
-        "desc": "Nhiều vòng lặp khép kín, kiểm tra cơ chế tập visited (Graph Search) tránh bị rơi vào vòng lặp vô hạn.",
-    },
-    "deep_dead_ends.txt": {
-        "title": "Mê cung ngõ cụt sâu (Deep Dead-Ends)",
-        "tag": "NGÕ CỤT",
-        "tag_color": (234, 179, 8),
-        "desc": "Chứa các ngõ cụt dài, kiểm tra DFS dễ bị dẫn dụ đi sâu lãng phí (81 nodes) trong khi A* (43 nodes) định hướng tốt nhờ heuristic.",
-    },
-    "multi_food_four_corners.txt": {
-        "title": "Bài toán 4 góc kinh điển (Four Corners)",
-        "tag": "MULTI-FOOD",
-        "tag_color": (251, 191, 36),
-        "desc": "4 viên thức ăn ở 4 góc đối xứng, Pacman ở tâm. Kiểm tra thuật toán Multi-Goal A* Heuristic MST gom thức ăn tối ưu (40 bước).",
-    },
-    "multi_food_and_final_goal.txt": {
-        "title": "Ăn thức ăn rồi về Goal (Food + Goal)",
-        "tag": "FOOD + GOAL",
-        "tag_color": (52, 211, 153),
-        "desc": "Gom sạch 6 viên thức ăn rải rác trong mê cung rồi chạy về đích Goal (G) ở góc thoát hiểm (A* tìm đúng 72 bước tối ưu).",
-    },
-    "multi_goal_sparse.txt": {
-        "title": "Nhiều điểm Goal phân tán (Sparse Goals)",
-        "tag": "MULTI-GOAL",
-        "tag_color": (52, 211, 153),
-        "desc": "Có 5 điểm Goal G phân tán trên bản đồ, kiểm tra thuật toán MultiGoal duyệt qua tất cả các điểm chốt.",
-    },
-    "multi_goal_test.txt": {
-        "title": "Kiểm thử 4 Goal tiêu chuẩn",
-        "tag": "MULTI-GOAL",
-        "tag_color": (52, 211, 153),
-        "desc": "Map tiêu chuẩn kiểm thử bài toán nhiều mục tiêu của đồ án, 4 vị trí Goal (G).",
-    },
-    "map_test.txt": {
-        "title": "Bản đồ lớn 43 thức ăn (43 Foods)",
-        "tag": "MULTI-FOOD",
-        "tag_color": (251, 191, 36),
-        "desc": "Map có 43 thức ăn rải khắp mê cung, kiểm tra thuật toán xấp xỉ Nearest-Neighbor tour không bị nghẽn.",
-    },
-    "adversarial_single_ghost_corridor.txt": {
-        "title": "Hành lang 1 Ghost đối đầu",
-        "tag": "ĐỐI KHÁNG 1 MA",
-        "tag_color": (239, 68, 68),
-        "desc": "Hành lang có các hốc né, kiểm tra Minimax/Alpha-Beta có biết rẽ vào hốc để tránh Ghost đối đầu rồi đi tiếp tới Goal.",
-    },
-    "adversarial_two_ghosts_pincer.txt": {
-        "title": "Gọng kìm 2 Ghost (Pincer Trap)",
-        "tag": "ĐỐI KHÁNG 2 MA",
-        "tag_color": (239, 68, 68),
-        "desc": "2 Ghost dồn từ 2 phía, kiểm tra Alpha-Beta cắt tỉa mạnh (68.2% ở depth 3) và tìm hướng thoát thân khả thi.",
-    },
-    "adversarial_dead_end_trap.txt": {
-        "title": "Bẫy ngõ cụt khi có Ghost áp sát",
-        "tag": "BẪY NGÕ CỤT",
-        "tag_color": (244, 63, 94),
-        "desc": "Pacman đứng ở ngã ba gần ngõ cụt, Ghost tiến tới từ hành lang chính. Kiểm tra hàm đánh giá né bẫy ngõ cụt.",
-    },
-    "adversarial_small.txt": {
-        "title": "Bản đồ đối kháng nhỏ (Small Adv)",
-        "tag": "ĐỐI KHÁNG 1 MA",
-        "tag_color": (239, 68, 68),
-        "desc": "Bản đồ đối kháng nhỏ chuẩn 11x21 gồm 1 Ghost, 2 Food và 1 Goal. Kiểm chứng Alpha-Beta thắng game.",
+        "desc": "Map nhỏ 9x15 không gian thoáng, 1 Goal; làm cơ sở đối sánh tính tối ưu và số node mở rộng của BFS, DFS, UCS và A*.",
     },
     "test_map.txt": {
-        "title": "Bản đồ tiêu chuẩn 2 Ghost",
+        "title": "Mê cung tiêu chuẩn 2 Ghost (9x15)",
         "tag": "ĐỐI KHÁNG 2 MA",
         "tag_color": (239, 68, 68),
-        "desc": "Map tiêu chuẩn của đề bài kích thước 9x15 có 2 Ghost và 1 Goal.",
+        "desc": "Bản đồ nhỏ 9x15 nhiều vật cản (mê cung tiêu chuẩn), gồm 2 Ghost và 1 Goal; kiểm thử tìm đường và đối kháng cơ bản.",
+    },
+    "single_large_many_solvable.txt": {
+        "title": "Mê cung lớn dày đặc vật cản (31x41)",
+        "tag": "MAP LỚN - MÊ CUNG",
+        "tag_color": (14, 165, 233),
+        "desc": "Bản đồ lớn 31x41 nhiều tường chắn và nhánh rẽ phức tạp, 1 Goal; đo hiệu năng của A* heuristic Manhattan so với BFS/DFS.",
     },
     "large_map.txt": {
-        "title": "Bản đồ lớn 3 Ghost (Large 22x19)",
+        "title": "Bản đồ Pacman lớn 3 Ghost (22x19)",
         "tag": "MAP LỚN 3 MA",
         "tag_color": (249, 115, 22),
-        "desc": "Map lớn 22x19 với 3 Ghost, kiểm tra Alpha-Beta cắt tỉa 82.0% số trạng thái (từ 6684 xuống 1200 nodes).",
+        "desc": "Bản đồ lớn 22x19 với buồng giam 3 Ghost ở trung tâm; đo mức bùng nổ node và hiệu quả cắt tỉa của Alpha-Beta (giảm 82% trạng thái) so với Minimax.",
     },
-    "map_2.txt": {
-        "title": "Bản đồ lớn mở rộng (Map 2)",
-        "tag": "MAP LỚN",
-        "tag_color": (249, 115, 22),
-        "desc": "Map 22x19 tương đương large_map dùng cho kiểm tra độ ổn định.",
+    "multi_goal_test.txt": {
+        "title": "Bản đồ nhỏ nhiều mục tiêu (9x15)",
+        "tag": "MULTI-GOAL (NHỎ)",
+        "tag_color": (52, 211, 153),
+        "desc": "Bản đồ 9x15 có 4 vị trí Goal (G) ở các góc khác nhau; kiểm thử bài toán gom hết mục tiêu (Multi-Goal Search).",
+    },
+    "multi_large_many_solvable.txt": {
+        "title": "Mê cung lớn nhiều mục tiêu (31x41)",
+        "tag": "MULTI-GOAL (LỚN)",
+        "tag_color": (16, 185, 129),
+        "desc": "Bản đồ lớn 31x41 nhiều vật cản gồm 5 điểm thức ăn (.) và 1 đích thoát hiểm (G); kiểm tra giới hạn chịu tải của A* đa mục tiêu.",
+    },
+    "cost_small_single.txt": {
+        "title": "Chi phí không đồng nhất - Nhỏ (9x19)",
+        "tag": "CHI PHÍ BÙN LẦY",
+        "tag_color": (168, 85, 247),
+        "desc": "Map 9x19 có vùng bùn lầy (MUD = 6) chặn khe hở giữa; kiểm tra UCS/A* tự động đi vòng khe trên (28 bước, cost 28) thay vì đi thẳng qua bùn (16 bước, cost 41).",
+    },
+    "cost_large_single.txt": {
+        "title": "Chi phí không đồng nhất - Lớn (25x41)",
+        "tag": "CHI PHÍ BÙN LẦY",
+        "tag_color": (139, 92, 246),
+        "desc": "Map lớn 25x41 có bãi bùn lầy (MUD = 6) ở trung tâm; đối sánh giữa đường đi thẳng ít bước (38 bước, cost 93) và đường vòng tối ưu chi phí (58 bước, cost 58).",
+    },
+    "adversarial_small.txt": {
+        "title": "Hành lang hẹp 1 Ghost bám đuổi (11x21)",
+        "tag": "ĐỐI KHÁNG 1 MA",
+        "tag_color": (239, 68, 68),
+        "desc": "Bản đồ 11x21 có hành lang hẹp dài, 1 Ghost bám sát sau lưng, 2 Food và 1 Goal; kiểm tra khả năng né tránh của Minimax và Alpha-Beta.",
     },
     "dead_end_maze.txt": {
-        "title": "Mê cung ngõ cụt và chu trình",
+        "title": "Mê cung nhiều ngõ cụt (11x17)",
         "tag": "NGÕ CỤT",
         "tag_color": (234, 179, 8),
-        "desc": "Map có ngõ cụt và vòng lặp, kiểm tra khả năng thoát bẫy.",
-    },
-    "unsolvable_walled_goal.txt": {
-        "title": "Vô nghiệm: Goal bị tường bao kín",
-        "tag": "VÔ NGHIỆM",
-        "tag_color": (148, 163, 184),
-        "desc": "Goal bị tường bịt kín 4 phía, kiểm tra thuật toán trả về None an toàn (không tìm thấy đường, không crash).",
-    },
-    "unsolvable_walled_pacman.txt": {
-        "title": "Vô nghiệm: Pacman bị nhốt",
-        "tag": "VÔ NGHIỆM",
-        "tag_color": (148, 163, 184),
-        "desc": "Pacman bị nhốt trong phòng kín, kiểm tra phát hiện không có lời giải ngay lập tức sau 1 node.",
+        "desc": "Bản đồ 11x17 có nhiều ngõ cụt sâu và vòng lặp kèm 1 Ghost; kiểm tra hàm đánh giá (evaluation function) tránh bị dồn vào đường cụt.",
     },
     "no_solution_map.txt": {
-        "title": "Bản đồ không có đường tới đích",
-        "tag": "VÔ NGHIỆM",
+        "title": "Vô nghiệm - Bản đồ nhỏ (9x9)",
+        "tag": "VÔ NGHIỆM (NHỎ)",
         "tag_color": (148, 163, 184),
-        "desc": "Tường ngăn cách giữa Pacman và Goal, kiểm tra tính năng xử lý vô nghiệm.",
+        "desc": "Bản đồ nhỏ 9x9 có đường tới Goal bị tường bịt kín hoàn toàn; kiểm tra thuật toán dừng đúng và trả về None an toàn.",
     },
-    "weighted_swamp_shortcut_dilemma.txt": {
-        "title": "Bẫy đường tắt Đầm lầy (Shortcut Dilemma)",
-        "tag": "CHI PHÍ KHÔNG ĐỒNG NHẤT",
-        "tag_color": (59, 130, 246),
-        "desc": "Đường tắt qua đầm lầy (22 bước, cost 54) vs Đường vòng tránh đầm lầy (26 bước, cost 26). Chứng minh BFS sa vào bẫy còn UCS/A* chọn đường tối ưu chi phí.",
-    },
-    "weighted_river_crossing_maze.txt": {
-        "title": "Mê cung Vượt sông & Đầm lầy (River Crossing)",
-        "tag": "CHI PHÍ KHÔNG ĐỒNG NHẤT",
-        "tag_color": (59, 130, 246),
-        "desc": "Mê cung 15x29 phức tạp với nhiều dòng sông (~) và bãi lầy (S). Thử thách khả năng tìm đường ít tốn chi phí nhất qua các eo nước hẹp.",
-    },
-    "weighted_multi_food_wetlands.txt": {
-        "title": "Vùng ngập mặn gom Thức ăn (Multi-Food Wetlands)",
-        "tag": "MULTI-FOOD ĐẦM LẦY",
-        "tag_color": (251, 191, 36),
-        "desc": "8 viên thức ăn rải rác qua các dải đầm lầy và lòng sông trước khi thoát về Goal. Kiểm tra A* Heuristic MST thích ứng chi phí địa hình.",
-    },
-    "weighted_adversarial_quagmire.txt": {
-        "title": "Đấu trường Đầm lầy Đối kháng (Swamp Arena)",
-        "tag": "ĐỐI KHÁNG ĐẦM LẦY",
-        "tag_color": (239, 68, 68),
-        "desc": "Map đối kháng 15x27 có 2 Ghost, thử thách Pacman luồn lách qua các eo nước để về đích mà không bị dồn vào đầm lầy.",
+    "single_large_many_unsolvable.txt": {
+        "title": "Vô nghiệm - Mê cung lớn (31x41)",
+        "tag": "VÔ NGHIỆM (LỚN)",
+        "tag_color": (100, 116, 139),
+        "desc": "Mê cung lớn 31x41 nhiều vật cản có Goal bị tường bao kín bốn phía; kiểm tra tốc độ vét cạn không gian trạng thái lớn khi không có lời giải.",
     },
 }
-
 
 class MapBrowserModal:
     """Cửa sổ Modal tương tác duyệt và xem trước toàn cảnh bản đồ (Overview & Mini-Map Preview)"""
@@ -201,10 +125,9 @@ class MapBrowserModal:
 
         self.screen_w = w
         self.screen_h = h
-        self.map_files = [m for m in (maps or []) if "bad_map" not in m]  # Lọc bỏ map lỗi test
+        self.map_files = [m for m in (maps or []) if "bad_map" not in m]
         self.on_select = cb
 
-        # Khung modal chính giữa màn hình
         modal_w = 1040
         modal_h = 630
         self.rect = pygame.Rect(
@@ -214,19 +137,15 @@ class MapBrowserModal:
             modal_h
         )
 
-        # Chọn map ban đầu
         self.selected_map = cur if cur in self.map_files else (self.map_files[0] if self.map_files else None)
-        self.cached_map_data = {}  # Cache kết quả nạp map và thông số
+        self.cached_map_data = {}
         self.scroll_y = 0
         self.item_height = 46
 
-        # Nút đóng
         self.close_btn_rect = pygame.Rect(self.rect.right - 42, self.rect.y + 14, 28, 28)
 
-        # Nút chọn map vào game
         self.confirm_btn_rect = pygame.Rect(self.rect.right - 260, self.rect.bottom - 48, 236, 36)
 
-        # Pre-load thông tin của map hiện tại
         if self.selected_map:
             self._load_map_details(self.selected_map)
 
@@ -264,7 +183,6 @@ class MapBrowserModal:
 
     def handle_event(self, event):
         """Xử lý sự kiện bàn phím và chuột trong modal"""
-        # Phím ESC đóng modal
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 return "CLOSE"
@@ -274,37 +192,31 @@ class MapBrowserModal:
                         self.on_select(self.selected_map)
                     return "SELECT"
 
-        # Bắt sự kiện click chuột
         if event.type == pygame.MOUSEBUTTONDOWN:
             mx, my = event.pos
 
-            # Click nút đóng [X]
             if self.close_btn_rect.collidepoint(mx, my):
                 return "CLOSE"
 
-            # Click ra ngoài modal -> đóng
             if not self.rect.collidepoint(mx, my):
                 return "CLOSE"
 
-            # Click nút xác nhận [CHỌN BẢN ĐỒ NÀY]
             if self.confirm_btn_rect.collidepoint(mx, my):
                 if self.selected_map:
                     if self.on_select:
                         self.on_select(self.selected_map)
                     return "SELECT"
 
-            # Cuộn danh sách bằng con lăn chuột
             list_rect = pygame.Rect(self.rect.x + 20, self.rect.y + 60, 420, self.rect.height - 80)
             if list_rect.collidepoint(mx, my):
-                if event.button == 4:  # Cuộn lên
+                if event.button == 4:
                     self.scroll_y = max(0, self.scroll_y - 28)
                     return True
-                elif event.button == 5:  # Cuộn xuống
+                elif event.button == 5:
                     max_scroll = max(0, len(self.map_files) * self.item_height - (list_rect.height - 20))
                     self.scroll_y = min(max_scroll, self.scroll_y + 28)
                     return True
 
-                # Click chọn một map trong danh sách
                 rel_y = my - (self.rect.y + 68) + self.scroll_y
                 if rel_y >= 0:
                     clicked_idx = rel_y // self.item_height
@@ -317,30 +229,24 @@ class MapBrowserModal:
 
     def draw(self, surface):
         """Vẽ toàn bộ Modal: Nền làm mờ, Danh sách bên trái, Mini-Map Preview bên phải"""
-        # 1. Lớp phủ làm tối màn hình nền (Dim backdrop)
         dim_surf = pygame.Surface((self.screen_w, self.screen_h), pygame.SRCALPHA)
         dim_surf.fill((8, 10, 18, 210))
         surface.blit(dim_surf, (0, 0))
 
-        # 2. Khung modal chính Arcade Cabinet
         draw_arcade_panel(surface, self.rect, bg_color=(15, 20, 32), corner_radius=8)
 
-        # Viền sáng neon nổi bật quanh modal
         pygame.draw.rect(surface, (56, 189, 248), self.rect, width=2, border_radius=8)
 
-        # Header Tiêu đề
         font_title = get_font("header")
         hdr_txt = font_title.render("🗺 BỘ DUYỆT & XEM TRƯỚC BẢN ĐỒ (MAP BROWSER & OVERVIEW)", True, (251, 191, 36))
         surface.blit(hdr_txt, (self.rect.x + 24, self.rect.y + 18))
 
-        # Nút đóng [X]
         pygame.draw.rect(surface, (35, 41, 66), self.close_btn_rect, border_radius=4)
         pygame.draw.rect(surface, BORDER_COLOR, self.close_btn_rect, width=1, border_radius=4)
         font_btn = get_font("badge")
         x_surf = font_btn.render("X", True, (244, 63, 94))
         surface.blit(x_surf, x_surf.get_rect(center=self.close_btn_rect.center))
 
-        # Phân chia: Cột trái (Danh sách map) và Cột phải (Vùng xem trước Preview)
         self._draw_map_list(surface)
         self._draw_preview_panel(surface)
 
@@ -350,7 +256,6 @@ class MapBrowserModal:
         pygame.draw.rect(surface, (12, 15, 25), list_rect, border_radius=6)
         pygame.draw.rect(surface, BORDER_COLOR, list_rect, width=1, border_radius=6)
 
-        # Sử dụng clip rect để nội dung không tràn ra ngoài vùng cuộn
         prev_clip = surface.get_clip()
         surface.set_clip(list_rect.inflate(-4, -4))
 
@@ -366,7 +271,6 @@ class MapBrowserModal:
             item_rect = pygame.Rect(list_rect.x + 6, item_y, list_rect.width - 12, self.item_height - 4)
             is_selected = (mpath == self.selected_map)
 
-            # Màu nền item
             if is_selected:
                 pygame.draw.rect(surface, (30, 41, 69), item_rect, border_radius=4)
                 pygame.draw.rect(surface, (56, 189, 248), item_rect, width=2, border_radius=4)
@@ -374,16 +278,13 @@ class MapBrowserModal:
                 pygame.draw.rect(surface, (18, 23, 38), item_rect, border_radius=4)
                 pygame.draw.rect(surface, (30, 36, 56), item_rect, width=1, border_radius=4)
 
-            # Lấy thông tin tóm tắt
             fname = mpath.split("/")[-1].split("\\")[-1]
             meta = MAP_METADATA.get(fname, {"title": fname, "tag": "MAP", "tag_color": (148, 163, 184)})
 
-            # Tên file
             name_color = (255, 214, 10) if is_selected else (241, 245, 249)
             name_surf = font_name.render(fname, True, name_color)
             surface.blit(name_surf, (item_rect.x + 10, item_rect.y + 6))
 
-            # Nhãn thể loại
             tag_text = meta.get("tag", "MAP")
             tag_color = meta.get("tag_color", (56, 189, 248))
             tag_surf = font_tag.render(tag_text, True, tag_color)
@@ -412,12 +313,10 @@ class MapBrowserModal:
         cols = data["cols"]
         meta = data["meta"]
 
-        # 1. TIÊU ĐỀ BẢN ĐỒ VÀ MÔ TẢ
         font_t = get_font("header")
         t_surf = font_t.render(meta.get("title", data["filename"]), True, (254, 240, 138))
         surface.blit(t_surf, (preview_x + 14, self.rect.y + 70))
 
-        # Thẻ mô tả chức năng test
         font_b = get_font("body")
         desc_lines = self._wrap_text(meta.get("desc", ""), font_b, preview_w - 28)
         cur_dy = self.rect.y + 96
@@ -426,7 +325,6 @@ class MapBrowserModal:
             surface.blit(d_surf, (preview_x + 14, cur_dy))
             cur_dy += 18
 
-        # 2. KHUNG VẼ BẢN ĐỒ THU NHỎ (MINI-MAP CANVAS)
         canvas_y = cur_dy + 8
         canvas_h = self.rect.bottom - canvas_y - 64
         canvas_w = preview_w - 28
@@ -435,7 +333,6 @@ class MapBrowserModal:
         pygame.draw.rect(surface, (8, 10, 18), canvas_rect, border_radius=4)
         pygame.draw.rect(surface, (35, 41, 66), canvas_rect, width=1, border_radius=4)
 
-        # Tính toán kích thước tile cho Mini-Map Preview
         tile_w = (canvas_w - 16) // max(1, cols)
         tile_h = (canvas_h - 16) // max(1, rows)
         tile_size = max(4, min(24, min(tile_w, tile_h)))
@@ -445,7 +342,6 @@ class MapBrowserModal:
         offset_x = canvas_rect.x + (canvas_w - maze_px_w) // 2
         offset_y = canvas_rect.y + (canvas_h - maze_px_h) // 2
 
-        # Render từng ô của mê cung
         for r in range(rows):
             for c in range(cols):
                 char = gmap[r][c]
@@ -454,25 +350,16 @@ class MapBrowserModal:
                 t_rect = pygame.Rect(rx, ry, tile_size, tile_size)
 
                 if char == "#":
-                    # Tường Arcade
                     pygame.draw.rect(surface, WALL_FILL, t_rect)
                     pygame.draw.rect(surface, WALL_BORDER, t_rect, width=1)
                 else:
-                    # Đường đi / Địa hình
-                    if char == "~":
-                        pygame.draw.rect(surface, WATER_FILL, t_rect)
-                    elif char == "S":
-                        pygame.draw.rect(surface, SWAMP_FILL, t_rect)
-                    else:
-                        pygame.draw.rect(surface, (14, 17, 28), t_rect)
+                    pygame.draw.rect(surface, (14, 17, 28), t_rect)
 
-                    # Food (.)
                     if char == ".":
                         cx = rx + tile_size // 2
                         cy = ry + tile_size // 2
                         pygame.draw.circle(surface, FOOD_PELLET, (cx, cy), max(1, tile_size // 4))
 
-                    # Goal (G)
                     elif char == "G":
                         cx = rx + tile_size // 2
                         cy = ry + tile_size // 2
@@ -480,26 +367,22 @@ class MapBrowserModal:
                         pts = [(cx, cy - rad), (cx + rad, cy), (cx, cy + rad), (cx - rad, cy)]
                         pygame.draw.polygon(surface, GOAL_POINT, pts)
 
-                    # Ghost (@)
                     elif char == "@":
                         cx = rx + tile_size // 2
                         cy = ry + tile_size // 2
                         pygame.draw.circle(surface, (239, 68, 68), (cx, cy), max(2, int(tile_size * 0.38)))
 
-                    # Pacman (P)
                     elif char == "P":
                         cx = rx + tile_size // 2
                         cy = ry + tile_size // 2
                         pygame.draw.circle(surface, COLOR_PACMAN, (cx, cy), max(3, int(tile_size * 0.42)))
 
-        # 3. THANH THỐNG SỐ BẢN ĐỒ TỔNG QUÁT DƯỚI ĐÁY
         info_y = self.rect.bottom - 48
         font_info = get_font("body")
         specs_str = f"Lưới: {rows}x{cols}  |  P: {data['spawn']}  |  Food: {len(data['foods'])}  |  Goal: {len(data['goals'])}  |  Ghost: {len(data['ghosts'])}"
         specs_surf = font_info.render(specs_str, True, (148, 163, 184))
         surface.blit(specs_surf, (preview_x + 14, info_y + 8))
 
-        # Nút xác nhận [CHỌN BẢN ĐỒ NÀY VÀO TRÒ CHƠI]
         pygame.draw.rect(surface, (16, 185, 129), self.confirm_btn_rect, border_radius=4)
         pygame.draw.rect(surface, (110, 231, 183), self.confirm_btn_rect, width=1, border_radius=4)
         font_btn = get_font("badge")
