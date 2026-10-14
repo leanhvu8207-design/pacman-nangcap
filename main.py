@@ -5,6 +5,7 @@ from collections import deque
 
 from src.utils.map_loader import load_map
 from src.utils.map_info import get_map_info
+from src.utils.map_info import get_tile_cost
 
 from src.search.pm_search_problem import PMSearchProblem
 from src.search.multi_goal_search import MultiGoal
@@ -92,7 +93,14 @@ def plan_multi_food_path(algo_name, spawn, foods, game_map, final_goal=None):
             total_nodes += searcher.expanded_count
 
     time_used = time.time() - t0
-    return all_actions, total_nodes, time_used
+    # tính tổng chi phí thực tế đi qua các địa hình
+    total_path_cost = 0
+    curr_pos = spawn
+    moves = {"UP": (-1, 0), "DOWN": (1, 0), "LEFT": (0, -1), "RIGHT": (0, 1)}
+    for act in all_actions:
+        curr_pos = (curr_pos[0] + moves[act][0], curr_pos[1] + moves[act][1])
+        total_path_cost += get_tile_cost(curr_pos, game_map)
+    return all_actions, total_nodes, time_used, total_path_cost
 
 
 
@@ -140,9 +148,13 @@ def main():
     print("5. maps/dead_end_maze.txt (Map ngo cut va chu trinh)")
     print("6. maps/no_solution_map.txt (Map khong co loi giai)")
     print("7. maps/bad_map.txt (Map loi de test)")
-    print("8. Tu nhap duong dan file map khac (.txt)")
+    print("8. maps/weighted_swamp_shortcut_dilemma.txt (Bay duong tat dam lay)")
+    print("9. maps/weighted_river_crossing_maze.txt (Me cung vuot song & dam lay)")
+    print("10. maps/weighted_multi_food_wetlands.txt (Vung ngap man gom 8 Food)")
+    print("11. maps/weighted_adversarial_quagmire.txt (Doi khang dam lay 2 Ghost)")
+    print("12. Tu nhap duong dan file map khac (.txt)")
 
-    chon_map = input("Nhap lua chon ban do (1-8): ").strip()
+    chon_map = input("Nhap lua chon ban do (1-12): ").strip()
 
     file_map = "maps/test_map.txt"
     game_map = None
@@ -169,6 +181,18 @@ def main():
         file_map = "maps/bad_map.txt"
         game_map = load_map(file_map)
     elif chon_map == "8":
+        file_map = "maps/weighted_swamp_shortcut_dilemma.txt"
+        game_map = load_map(file_map)
+    elif chon_map == "9":
+        file_map = "maps/weighted_river_crossing_maze.txt"
+        game_map = load_map(file_map)
+    elif chon_map == "10":
+        file_map = "maps/weighted_multi_food_wetlands.txt"
+        game_map = load_map(file_map)
+    elif chon_map == "11":
+        file_map = "maps/weighted_adversarial_quagmire.txt"
+        game_map = load_map(file_map)
+    elif chon_map == "12":
         file_map = input("Nhap duong dan file map (.txt): ").strip()
         game_map = load_map(file_map)
     else:
@@ -236,8 +260,7 @@ def main():
                     path_cost = problem.measure_path_cost(actions)
             else:
                 print(f"\nDang lap ke hoach an sach {len(foods)} vien Food (.) voi {ten_tt}...")
-                actions, exp_count, time_cost = plan_multi_food_path(ten_tt, spawn, foods, game_map, final_goal=final_goal)
-                path_cost = len(actions) if actions else 0
+                actions, exp_count, time_cost, path_cost = plan_multi_food_path(ten_tt, spawn, foods, game_map, final_goal=final_goal)
 
         # 2. Che do Multi-Goal: Di qua tat ca cac Goal (G)
         elif len(goals) > 1:
@@ -466,8 +489,7 @@ def run_cli(map_path, algo_name, depth=2, mode="match"):
                 time_cost = searcher.time_used
                 path_cost = problem.measure_path_cost(actions) if actions else 0
             else:
-                actions, exp_count, time_cost = plan_multi_food_path(algo, spawn, foods, game_map, final_goal=final_goal)
-                path_cost = len(actions) if actions else 0
+                actions, exp_count, time_cost, path_cost = plan_multi_food_path(algo, spawn, foods, game_map, final_goal=final_goal)
         elif len(goals) > 1:
             problem = MultiGoal(spawn, tuple(goals), game_map, goal=None)
             if algo == "DFS": searcher = DFS(problem)

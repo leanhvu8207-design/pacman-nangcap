@@ -1,12 +1,16 @@
 from src.pacman.game_state import GameState
-
+from src.utils.map_info import get_tile_cost
 
 class PMSearchProblem:
     def __init__(self, spawn, target, game_map, cost_fn=None, heuristic_fn=None):
         self.pacman_spawn = spawn
         self.target = target
         self.game_map = game_map
-        self.cost_fn = cost_fn
+        # Nếu không truyền cost_fn, tự động dùng hàm tính chi phí theo địa hình bản đồ
+        if cost_fn is None:
+            self.cost_fn = lambda pos: get_tile_cost(pos, self.game_map)
+        else:
+            self.cost_fn = cost_fn
         self.heuristic_fn = heuristic_fn
 
     # state = (row, col)

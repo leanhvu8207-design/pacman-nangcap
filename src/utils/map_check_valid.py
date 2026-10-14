@@ -21,9 +21,11 @@ def check_map(game_map):
     P : Pacman
     G : Goal
     @ : Ghost
-    " " : Khoảng trống
+    ~ : Nước (Chi phí là 2)
+    S : Đầm lầy (Chi phí là 3)
+    " " : Khoảng trống (Chi phí là 1)
     """
-    allowed_char = "#.PG@ "
+    allowed_char = "#.PG@~S "
     for line in game_map:  
         for char in line:
             if char not in allowed_char:

@@ -14,6 +14,10 @@ from ui.theme import (
     WALL_FILL,
     WALL_BORDER,
     WALL_INNER,
+    WATER_FILL,
+    WATER_BORDER,
+    SWAMP_FILL,
+    SWAMP_BORDER,
     FOOD_PELLET,
     FOOD_GLOW,
     GOAL_POINT,
@@ -115,6 +119,14 @@ class MazeRenderer:
                     if ts >= 20:
                         inner_rect = tile_rect.inflate(-4, -4)
                         pygame.draw.rect(surface, WALL_INNER, inner_rect, width=1)
+                elif char == "~":
+                    # Ô Nước (Chi phí 2)
+                    pygame.draw.rect(surface, WATER_FILL, tile_rect)
+                    pygame.draw.rect(surface, WATER_BORDER, tile_rect, width=1)
+                elif char == "S":
+                     # Ô Đầm lầy (Chi phí 3)
+                    pygame.draw.rect(surface, SWAMP_FILL, tile_rect)
+                    pygame.draw.rect(surface, SWAMP_BORDER, tile_rect, width=1)
                 else:
                     # Đường đi trống (nền tối mờ retro)
                     pygame.draw.rect(surface, (15, 17, 27), tile_rect)

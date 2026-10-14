@@ -11,7 +11,7 @@ from collections import deque
 
 # Import các thành phần từ backend hiện có
 from src.utils.map_loader import load_map
-from src.utils.map_info import get_map_info
+from src.utils.map_info import get_map_info, get_tile_cost
 
 from src.search.pm_search_problem import PMSearchProblem
 from src.search.multi_goal_search import MultiGoal
@@ -342,8 +342,16 @@ class GameController:
                     self.path_cost = problem.measure_path_cost(actions)
             else:
                 self.log(f"Đang lập kế hoạch gom sạch {len(self.foods)} thức ăn với {self.algorithm}...", TEXT_MUTED)
-                actions, self.expanded_count, self.time_used = self._plan_multi_food_tour(self.algorithm, final_goal=final_goal)
-                self.path_cost = len(actions) if actions else None
+                if actions:
+                    curr_pos = self.spawn
+                    moves = {"UP": (-1, 0), "DOWN": (1, 0), "LEFT": (0, -1), "RIGHT": (0, 1)}
+                    total_c = 0
+                    for act in actions:
+                        curr_pos = (curr_pos[0] + moves[act][0], curr_pos[1] + moves[act][1])
+                        total_c += get_tile_cost(curr_pos, self.game_map)
+                    self.path_cost = total_c
+                else:
+                    self.path_cost = None
 
         # 2. Chế độ Multi-Goal: Đi qua tất cả các ô Goal (G)
         elif len(self.goals) > 1:

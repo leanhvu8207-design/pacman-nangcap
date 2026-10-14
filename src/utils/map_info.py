@@ -36,4 +36,21 @@ def get_map_info(game_map, return_foods=False):
 
     return spawn, goals, ghosts
 
-        
+# Bảng quy đổi chi phí bước vào từng loại địa hình
+TERRAIN_COSTS = {
+    "~": 2,  # nước
+    "S": 3,  # đầm lầy
+}
+
+def get_tile_cost(position, game_map):
+    """
+    Lấy chi phí bước vào ô position=(r, c).
+    - Ô nước '~': chi phí = 2
+    - Ô đầm lầy 'S': chi phí = 3
+    - Các ô khác (' ', '.', 'G'): chi phí = 1
+    """
+    r, c = position
+    if 0 <= r < len(game_map) and 0 <= c < len(game_map[r]):
+        char = game_map[r][c]
+        return TERRAIN_COSTS.get(char, 1)
+    return 1 

@@ -1,2 +1,1 @@
-reportlab>=4.0.0
-pygame>=2.6.0
+pygame==2.6.1

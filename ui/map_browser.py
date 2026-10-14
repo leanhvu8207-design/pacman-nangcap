@@ -28,6 +28,8 @@ from ui.theme import (
     GOAL_POINT,
     GOAL_BORDER,
     GHOST_COLORS,
+    WATER_FILL,
+    SWAMP_FILL,
     BTN_NORMAL,
     BTN_HOVER,
     BTN_ACTIVE,
@@ -154,6 +156,30 @@ MAP_METADATA = {
         "tag": "VÔ NGHIỆM",
         "tag_color": (148, 163, 184),
         "desc": "Tường ngăn cách giữa Pacman và Goal, kiểm tra tính năng xử lý vô nghiệm.",
+    },
+    "weighted_swamp_shortcut_dilemma.txt": {
+        "title": "Bẫy đường tắt Đầm lầy (Shortcut Dilemma)",
+        "tag": "CHI PHÍ KHÔNG ĐỒNG NHẤT",
+        "tag_color": (59, 130, 246),
+        "desc": "Đường tắt qua đầm lầy (22 bước, cost 54) vs Đường vòng tránh đầm lầy (26 bước, cost 26). Chứng minh BFS sa vào bẫy còn UCS/A* chọn đường tối ưu chi phí.",
+    },
+    "weighted_river_crossing_maze.txt": {
+        "title": "Mê cung Vượt sông & Đầm lầy (River Crossing)",
+        "tag": "CHI PHÍ KHÔNG ĐỒNG NHẤT",
+        "tag_color": (59, 130, 246),
+        "desc": "Mê cung 15x29 phức tạp với nhiều dòng sông (~) và bãi lầy (S). Thử thách khả năng tìm đường ít tốn chi phí nhất qua các eo nước hẹp.",
+    },
+    "weighted_multi_food_wetlands.txt": {
+        "title": "Vùng ngập mặn gom Thức ăn (Multi-Food Wetlands)",
+        "tag": "MULTI-FOOD ĐẦM LẦY",
+        "tag_color": (251, 191, 36),
+        "desc": "8 viên thức ăn rải rác qua các dải đầm lầy và lòng sông trước khi thoát về Goal. Kiểm tra A* Heuristic MST thích ứng chi phí địa hình.",
+    },
+    "weighted_adversarial_quagmire.txt": {
+        "title": "Đấu trường Đầm lầy Đối kháng (Swamp Arena)",
+        "tag": "ĐỐI KHÁNG ĐẦM LẦY",
+        "tag_color": (239, 68, 68),
+        "desc": "Map đối kháng 15x27 có 2 Ghost, thử thách Pacman luồn lách qua các eo nước để về đích mà không bị dồn vào đầm lầy.",
     },
 }
 
@@ -432,8 +458,13 @@ class MapBrowserModal:
                     pygame.draw.rect(surface, WALL_FILL, t_rect)
                     pygame.draw.rect(surface, WALL_BORDER, t_rect, width=1)
                 else:
-                    # Đường đi
-                    pygame.draw.rect(surface, (14, 17, 28), t_rect)
+                    # Đường đi / Địa hình
+                    if char == "~":
+                        pygame.draw.rect(surface, WATER_FILL, t_rect)
+                    elif char == "S":
+                        pygame.draw.rect(surface, SWAMP_FILL, t_rect)
+                    else:
+                        pygame.draw.rect(surface, (14, 17, 28), t_rect)
 
                     # Food (.)
                     if char == ".":
