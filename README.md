@@ -3,7 +3,15 @@
 - **Môn học:** Biểu diễn tri thức và tìm kiếm nâng cao (UET.AI2014_5)
 - **Đơn vị:** Trường Đại học Công nghệ - ĐHQGHN (UET-VNU)
 - **Nhóm thực hiện:** Nhóm 07
-- Chi tiết thành viên và phân công công việc xem tại [CONTRIBUTIONS.md](CONTRIBUTIONS.md).
+
+| STT | Họ và tên | MSV | Vai trò |
+| :---: | :--- | :---: | :---: |
+| 1 | Bùi Chí Thành | 25023046 | Thành viên |
+| 2 | Khúc Hữu Trung | 25023062 | Thành viên |
+| 3 | Vũ Thành Thanh Tùng | 25023040 | Thành viên |
+| 4 | Lê Anh Vũ | 25023077 | Trưởng nhóm |
+
+- Chi tiết phân công công việc xem tại [CONTRIBUTIONS.md](CONTRIBUTIONS.md).
 
 ---
 
@@ -15,7 +23,7 @@ Bài tập lớn mô phỏng lại trò chơi Pacman nhằm cài đặt và th�
    - Hỗ trợ tìm đường đơn mục tiêu (Single-goal) và gom nhiều thức ăn (Multi-goal).
    - Hỗ trợ bản đồ có trọng số địa hình: Nước (`~`, chi phí 2) và Đầm lầy (`S`, chi phí 3).
    - Cài đặt 5 thuật toán: DFS, BFS, UCS, Greedy Best-First Search và A*.
-   - Với bài toán gom nhiều thức ăn (Multi-goal), hàm heuristic kết hợp khoảng cách đến thức ăn gần nhất và Cây khung nhỏ nhất (MST) để đảm bảo tính admissible và tìm được đường đi tối ưu.
+   - Với bài toán gom nhiều thức ăn (Multi-goal), hàm heuristic sử dụng khoảng cách Manhattan lớn nhất (Max Manhattan Distance) đến các thức ăn còn lại, đảm bảo tính admissible và consistent, giúp A* tìm được đường đi tối ưu với tốc độ tính toán nhanh.
 
 2. **Tìm kiếm đối kháng (Adversarial Search):**
    - Mô phỏng đối đầu giữa Pacman (MAX) và các Ghost (MIN).
@@ -41,7 +49,6 @@ P1_Nhom07/
 ├── README.md                   # Hướng dẫn sử dụng
 ├── CONTRIBUTIONS.md            # Bảng phân công công việc của nhóm
 ├── report.pdf                  # Bản báo cáo về dự án của nhóm
-├── test_part.py                # Script chạy thử nhanh các thuật toán tìm kiếm
 │
 ├── src/                        # Mã nguồn thuật toán và logic trò chơi
 │   ├── search/                 # Các thuật toán tìm kiếm cổ điển
@@ -101,7 +108,8 @@ P1_Nhom07/
 
 ### 4.1. Cài đặt môi trường
 
-Yêu cầu Python 3.10 trở lên.
+- **Yêu cầu môi trường:** Python 3.10 trở lên (khuyến nghị Python 3.11 - 3.13).
+- **Hệ điều hành đã thử nghiệm và hỗ trợ tốt:** Windows 10/11, Ubuntu/Linux 20.04+, macOS.
 
 ```bash
 # 1. Tạo môi trường ảo (tùy chọn)
@@ -154,7 +162,7 @@ Phù hợp khi cần chạy nhanh hoặc kiểm thử script:
 
 - **Các thuật toán tìm kiếm đường đi (DFS, BFS, UCS, GREEDY, ASTAR):**
   ```bash
-  python main.py --map maps/cost_large_single.txt --algo ASTAR
+  python main.py --map maps/single_small_few_solvable.txt --algo ASTAR
   python main.py --map maps/multi_large_many_solvable.txt --algo BFS
   ```
 
@@ -187,3 +195,12 @@ Phù hợp khi cần chạy nhanh hoặc kiểm thử script:
   - `results/search_benchmark.csv` và `.txt`
   - `results/adversarial_benchmark.csv` và `.txt`
   - `results/heuristic_evaluation.txt`
+
+---
+
+## 5. Giới hạn hoặc lỗi đã biết (Known Limitations)
+
+1. **Độ phức tạp tính toán của thuật toán đối kháng (Minimax / Alpha-Beta):**
+   - Do không gian trạng thái đối kháng tăng trưởng theo hàm mũ $O(b^d)$ với $b$ là hệ số phân nhánh của Pacman và các Ghost, độ sâu tìm kiếm khuyến nghị trong thực tế là $d \le 3$. Với $d \ge 4$ trên các bản đồ lớn có nhiều Ghost (như `large_map.txt`), thời gian tính toán cho mỗi nước đi sẽ tăng lên đáng kể.
+2. **Quy mô bài toán gom nhiều thức ăn (Multi-Goal Search):**
+   - Không gian trạng thái $S \times 2^{|Food|}$ của bài toán gom thức ăn bùng nổ tổ hợp khi số lượng thức ăn lớn. Thuật toán `MultiGoal` toàn cục hoạt động tối ưu nhất khi số thức ăn $\le 12$. Với các bản đồ có số lượng thức ăn lớn hơn (> 12 food), hệ thống tự động chuyển sang cơ chế lập kế hoạch phân đoạn (`_plan_multi_food_tour`) bằng cách tìm đường liên tiếp tới viên thức ăn gần nhất nhằm đảm bảo thời gian phản hồi tức thì mà không gây tràn bộ nhớ.

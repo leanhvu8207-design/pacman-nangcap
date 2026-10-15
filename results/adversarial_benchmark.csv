@@ -1,10 +1,10 @@
 map,depth,act_mm,act_ab,val_mm,val_ab,nodes_mm,nodes_ab,time_mm_ms,time_ab_ms,prune_pct,match
-adversarial_small (1 Ghost),1,UP,UP,-15620,-15620,12,11,0.55,0.06,8.3,True
-adversarial_small (1 Ghost),2,UP,UP,-15660,-15660,78,55,0.96,0.19,29.5,True
-adversarial_small (1 Ghost),3,UP,UP,-15700,-15700,557,250,2.39,1.29,55.1,True
-dead_end_maze (1 Ghost),1,DOWN,DOWN,-380,-380,6,5,0.22,0.02,16.7,True
-dead_end_maze (1 Ghost),2,DOWN,DOWN,-340,-340,30,21,0.81,0.13,30.0,True
-dead_end_maze (1 Ghost),3,DOWN,DOWN,-300,-300,126,65,0.7,0.21,48.4,True
-large_map (3 Ghosts),1,DOWN,DOWN,-820,-820,24,16,0.88,0.07,33.3,True
-large_map (3 Ghosts),2,DOWN,DOWN,-780,-780,384,152,2.37,0.58,60.4,True
-large_map (3 Ghosts),3,DOWN,DOWN,-740,-740,6684,1200,29.4,5.89,82.0,True
+adversarial_small (1 Ghost),1,UP,UP,-180,-180,12,10,0.33,0.04,16.7,True
+adversarial_small (1 Ghost),2,UP,UP,-140,-140,78,50,0.59,0.11,35.9,True
+adversarial_small (1 Ghost),3,UP,UP,-100,-100,557,215,1.46,0.44,61.4,True
+dead_end_maze (1 Ghost),1,DOWN,DOWN,-380,-380,6,5,0.15,0.02,16.7,True
+dead_end_maze (1 Ghost),2,DOWN,DOWN,-340,-340,30,21,0.25,0.05,30.0,True
+dead_end_maze (1 Ghost),3,DOWN,DOWN,-300,-300,126,65,0.36,0.13,48.4,True
+large_map (3 Ghosts),1,DOWN,DOWN,-820,-820,24,16,0.6,0.05,33.3,True
+large_map (3 Ghosts),2,DOWN,DOWN,-780,-780,384,152,1.6,0.42,60.4,True
+large_map (3 Ghosts),3,DOWN,DOWN,-740,-740,6684,1200,17.44,2.84,82.0,True

@@ -3,23 +3,23 @@ BANG SO SANH CHI PHI DONG NHAT (COST=1) VA KHONG DONG NHAT ('~'=2, 'S'=3) - NHOM
 ====================================================================================================
 Test Case (Map & Mode)             | Algorithm  | Found  | Steps   | Cost    | Nodes   | Time (ms) 
 ----------------------------------------------------------------------------------------------------
-swamp_shortcut (Dong nhat)         | DFS        | YES    | 22      | 22      | 23      | 0.12      
-swamp_shortcut (Dong nhat)         | BFS        | YES    | 22      | 22      | 52      | 0.24      
-swamp_shortcut (Dong nhat)         | UCS        | YES    | 22      | 22      | 52      | 0.25      
-swamp_shortcut (Dong nhat)         | Greedy     | YES    | 22      | 22      | 23      | 0.55      
-swamp_shortcut (Dong nhat)         | A*         | YES    | 22      | 22      | 23      | 0.15      
-swamp_shortcut (Khong dong nhat)   | DFS        | YES    | 22      | 54      | 23      | 0.10      
-swamp_shortcut (Khong dong nhat)   | BFS        | YES    | 22      | 54      | 52      | 0.26      
-swamp_shortcut (Khong dong nhat)   | UCS        | YES    | 26      | 26      | 50      | 0.63      
-swamp_shortcut (Khong dong nhat)   | Greedy     | YES    | 22      | 54      | 23      | 0.17      
-swamp_shortcut (Khong dong nhat)   | A*         | YES    | 26      | 26      | 37      | 0.32      
-multi_wetlands (Dong nhat)         | DFS        | YES    | 224     | 224     | 297     | 1.80      
-multi_wetlands (Dong nhat)         | BFS        | YES    | 76      | 76      | 17169   | 105.96    
-multi_wetlands (Dong nhat)         | UCS        | YES    | 76      | 76      | 17169   | 169.82    
-multi_wetlands (Dong nhat)         | Greedy     | YES    | 154     | 154     | 17448   | 201.51    
-multi_wetlands (Dong nhat)         | A*         | YES    | 76      | 76      | 4645    | 56.80     
-multi_wetlands (Khong dong nhat)   | DFS        | YES    | 224     | 263     | 297     | 1.90      
-multi_wetlands (Khong dong nhat)   | BFS        | YES    | 76      | 85      | 17169   | 108.02    
-multi_wetlands (Khong dong nhat)   | UCS        | YES    | 78      | 82      | 16971   | 166.65    
-multi_wetlands (Khong dong nhat)   | Greedy     | YES    | 154     | 164     | 17448   | 207.13    
-multi_wetlands (Khong dong nhat)   | A*         | YES    | 78      | 82      | 5039    | 82.06     
+swamp_shortcut (Dong nhat)         | DFS        | YES    | 22      | 22      | 23      | 0.09      
+swamp_shortcut (Dong nhat)         | BFS        | YES    | 22      | 22      | 52      | 0.16      
+swamp_shortcut (Dong nhat)         | UCS        | YES    | 22      | 22      | 52      | 0.17      
+swamp_shortcut (Dong nhat)         | Greedy     | YES    | 22      | 22      | 23      | 0.07      
+swamp_shortcut (Dong nhat)         | A*         | YES    | 22      | 22      | 23      | 0.07      
+swamp_shortcut (Khong dong nhat)   | DFS        | YES    | 22      | 54      | 23      | 0.07      
+swamp_shortcut (Khong dong nhat)   | BFS        | YES    | 22      | 54      | 52      | 0.16      
+swamp_shortcut (Khong dong nhat)   | UCS        | YES    | 26      | 26      | 50      | 0.18      
+swamp_shortcut (Khong dong nhat)   | Greedy     | YES    | 22      | 54      | 23      | 0.07      
+swamp_shortcut (Khong dong nhat)   | A*         | YES    | 26      | 26      | 37      | 0.14      
+multi_wetlands (Dong nhat)         | DFS        | YES    | 224     | 224     | 297     | 1.17      
+multi_wetlands (Dong nhat)         | BFS        | YES    | 76      | 76      | 17169   | 65.11     
+multi_wetlands (Dong nhat)         | UCS        | YES    | 76      | 76      | 17169   | 101.78    
+multi_wetlands (Dong nhat)         | Greedy     | YES    | 154     | 154     | 17448   | 127.89    
+multi_wetlands (Dong nhat)         | A*         | YES    | 76      | 76      | 4645    | 33.42     
+multi_wetlands (Khong dong nhat)   | DFS        | YES    | 224     | 263     | 297     | 1.46      
+multi_wetlands (Khong dong nhat)   | BFS        | YES    | 76      | 85      | 17169   | 71.86     
+multi_wetlands (Khong dong nhat)   | UCS        | YES    | 78      | 82      | 16971   | 109.78    
+multi_wetlands (Khong dong nhat)   | Greedy     | YES    | 154     | 164     | 17448   | 137.87    
+multi_wetlands (Khong dong nhat)   | A*         | YES    | 78      | 82      | 5039    | 39.91     

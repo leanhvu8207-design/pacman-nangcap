@@ -342,6 +342,7 @@ class GameController:
                     self.path_cost = problem.measure_path_cost(actions)
             else:
                 self.log(f"Đang lập kế hoạch gom sạch {len(self.foods)} thức ăn với {self.algorithm}...", TEXT_MUTED)
+                actions, self.expanded_count, self.time_used = self._plan_multi_food_tour(self.algorithm, final_goal)
                 if actions:
                     curr_pos = self.spawn
                     moves = {"UP": (-1, 0), "DOWN": (1, 0), "LEFT": (0, -1), "RIGHT": (0, 1)}

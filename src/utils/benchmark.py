@@ -385,7 +385,12 @@ def run_adversarial_benchmark():
         if not gmap:
             continue
         spawn, goals, ghosts, foods = get_map_info(gmap, return_foods=True)
-        target = goals[0] if goals else (foods[0] if foods else None)
+        if len(foods) > 0:
+            target = min(foods, key=lambda f: abs(spawn[0] - f[0]) + abs(spawn[1] - f[1]))
+        elif len(goals) > 0:
+            target = goals[0]
+        else:
+            target = None
 
         prob = AdvProblem(spawn, ghosts, target, gmap)
 
