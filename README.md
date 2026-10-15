@@ -35,11 +35,12 @@ Bài tập lớn mô phỏng lại trò chơi Pacman nhằm cài đặt và th�
 ## 2. Cấu trúc thư mục
 
 ```text
-P1_Nhom07_TEST_FIX/
+P1_Nhom07/
 ├── main.py                     # File chạy chính (CLI interactive, CLI có tham số, mở GUI)
 ├── requirements.txt            # Thư viện phụ thuộc (pygame)
 ├── README.md                   # Hướng dẫn sử dụng
 ├── CONTRIBUTIONS.md            # Bảng phân công công việc của nhóm
+├── report.pdf                  # Bản báo cáo về dự án của nhóm
 ├── test_part.py                # Script chạy thử nhanh các thuật toán tìm kiếm
 │
 ├── src/                        # Mã nguồn thuật toán và logic trò chơi
