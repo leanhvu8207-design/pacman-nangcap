@@ -19,6 +19,7 @@ from src.pacman.game_state import GameState
 from src.logic_pacman_vs_ghost.adv_problem import AdvProblem
 from src.logic_pacman_vs_ghost.minimax import Minimax
 from src.logic_pacman_vs_ghost.alpha_beta import AlphaBeta
+from src.logic_pacman_vs_ghost.expectimax import Expectimax
 
 
 def find_nearest_food(pos, food_set, game_map):
@@ -151,9 +152,15 @@ def main():
     print("8. single_small_few_solvable.txt (Map nho it loi giai)")
     print("9. weighted_multi_food_wetlands.txt (Vung ngap man gom Food)")
     print("10. weighted_swamp_shortcut_dilemma.txt (Bay duong tat dam lay)")
-    print("11. Tu nhap duong dan file map khac (.txt)")
+    print("11. adv_1_corridor_chase.txt (Doi khang co vua: 1 Ghost, 3 Food, 1 Goal)")
+    print("12. adv_2_twin_pincer_arena.txt (Doi khang gong kim: 2 Ghosts, 4 Food, 2 Goals)")
+    print("13. adv_3_multi_goal_fortress.txt (Doi khang phao dai: 2 Ghosts, 3 Food, 2 Goals)")
+    print("14. adv_4_diamond_labyrinth.txt (Doi khang me cung: 2 Ghosts, 4 Food, 2 Goals)")
+    print("15. adv_5_grand_three_ghosts.txt (Doi khang co dai: 3 Ghosts, 4 Food, 2 Goals)")
+    print("16. adv_6_multi_food_goal_arena.txt (Doi khang nhieu Food/Goal: 2 Ghosts, 6 Food, 2 Goals)")
+    print("17. Tu nhap duong dan file map khac (.txt)")
 
-    chon_map = input("Nhap lua chon ban do (1-11): ").strip()
+    chon_map = input("Nhap lua chon ban do (1-17): ").strip()
 
     file_map = "maps/adversarial_small.txt"
     game_map = None
@@ -189,6 +196,24 @@ def main():
         file_map = "maps/weighted_swamp_shortcut_dilemma.txt"
         game_map = load_map(file_map)
     elif chon_map == "11":
+        file_map = "maps/adv_1_corridor_chase.txt"
+        game_map = load_map(file_map)
+    elif chon_map == "12":
+        file_map = "maps/adv_2_twin_pincer_arena.txt"
+        game_map = load_map(file_map)
+    elif chon_map == "13":
+        file_map = "maps/adv_3_multi_goal_fortress.txt"
+        game_map = load_map(file_map)
+    elif chon_map == "14":
+        file_map = "maps/adv_4_diamond_labyrinth.txt"
+        game_map = load_map(file_map)
+    elif chon_map == "15":
+        file_map = "maps/adv_5_grand_three_ghosts.txt"
+        game_map = load_map(file_map)
+    elif chon_map == "16":
+        file_map = "maps/adv_6_multi_food_goal_arena.txt"
+        game_map = load_map(file_map)
+    elif chon_map == "17":
         file_map = input("Nhap duong dan file map (.txt): ").strip()
         game_map = load_map(file_map)
     else:
@@ -220,8 +245,9 @@ def main():
     print("5. A*")
     print("6. Minimax")
     print("7. Alpha-Beta")
+    print("8. Expectimax (Moi - Xac suat thong minh & Toi uu)")
 
-    thuat_toan = input("Chon thuat toan (1-7): ").strip()
+    thuat_toan = input("Chon thuat toan (1-8): ").strip()
 
     # Nhom 1: Cac thuat toan tim kiem co dien don tac tu
     if thuat_toan in ["1", "2", "3", "4", "5"]:
@@ -306,7 +332,7 @@ def main():
         print("Thoi gian chay (time_used):", round(time_cost, 6), "giay")
 
     # Nhom 2: Thuat toan doi khang co Ghost
-    elif thuat_toan in ["6", "7"]:
+    elif thuat_toan in ["6", "7", "8"]:
         if len(goals) == 0 and len(foods) == 0:
             print("[LOI] Map doi khang can co it nhat 1 Goal dich hoac Food!")
             return
@@ -319,7 +345,7 @@ def main():
         else:
             target = None
 
-        ten_tt = "Minimax" if thuat_toan == "6" else "Alpha-Beta"
+        ten_tt = "Minimax" if thuat_toan == "6" else ("Alpha-Beta" if thuat_toan == "7" else "Expectimax")
 
         # Nhap do sau tim kiem
         default_depth = 3 if len(ghosts) >= 2 else 2
@@ -339,8 +365,10 @@ def main():
             prob = AdvProblem(spawn, ghosts, target, game_map)
             if thuat_toan == "6":
                 ai = Minimax(prob, depth_limit)
-            else:
+            elif thuat_toan == "7":
                 ai = AlphaBeta(prob, depth_limit)
+            else:
+                ai = Expectimax(prob, depth_limit)
 
             action = ai.search()
             print("\n=== KET QUA QUYET DINH BUOC DAU ===")
@@ -365,7 +393,6 @@ def main():
         in_ban_do(game_map, state.pacman_position, state.ghost_positions, target, state.food)
 
         max_steps = max(100, len(foods) * 4 if len(foods) > 0 else 60)
-        huong_nguoc_lai = {"UP": "DOWN", "DOWN": "UP", "LEFT": "RIGHT", "RIGHT": "LEFT"}
 
         while buoc < max_steps:
             if len(state.food) > 0:
@@ -388,8 +415,10 @@ def main():
 
             if thuat_toan == "6":
                 ai = Minimax(prob, depth_limit, recent_positions=recent)
-            else:
+            elif thuat_toan == "7":
                 ai = AlphaBeta(prob, depth_limit, recent_positions=recent)
+            else:
+                ai = Expectimax(prob, depth_limit, recent_positions=recent)
 
             act = ai.search()
 
@@ -522,7 +551,7 @@ def run_cli(map_path, algo_name, depth=2, mode="match"):
         print(f"So node da duyet (expanded_count): {exp_count}")
         print(f"Thoi gian chay (time_used): {round(time_cost, 6)} giay")
 
-    elif algo in ["MINIMAX", "ALPHA-BETA"]:
+    elif algo in ["MINIMAX", "ALPHA-BETA", "EXPECTIMAX"]:
         if len(goals) == 0 and len(foods) == 0:
             print("[LOI] Map doi khang can co it nhat 1 Goal dich hoac Food!")
             return
@@ -537,7 +566,12 @@ def run_cli(map_path, algo_name, depth=2, mode="match"):
 
         if mode == "step":
             prob = AdvProblem(spawn, ghosts, target, game_map)
-            ai = Minimax(prob, depth) if algo == "MINIMAX" else AlphaBeta(prob, depth)
+            if algo == "MINIMAX":
+                ai = Minimax(prob, depth)
+            elif algo == "ALPHA-BETA":
+                ai = AlphaBeta(prob, depth)
+            else:
+                ai = Expectimax(prob, depth)
             action = ai.search()
             print("\n=== KET QUA QUYET DINH BUOC DAU (CLI) ===")
             print(f"Map: {map_path}")
@@ -571,7 +605,12 @@ def run_cli(map_path, algo_name, depth=2, mode="match"):
                 buoc += 1
                 prob = AdvProblem(state.pacman_position, state.ghost_positions, target, game_map)
                 recent = lich_su_positions[-8:]
-                ai = Minimax(prob, depth, recent_positions=recent) if algo == "MINIMAX" else AlphaBeta(prob, depth, recent_positions=recent)
+                if algo == "MINIMAX":
+                    ai = Minimax(prob, depth, recent_positions=recent)
+                elif algo == "ALPHA-BETA":
+                    ai = AlphaBeta(prob, depth, recent_positions=recent)
+                else:
+                    ai = Expectimax(prob, depth, recent_positions=recent)
                 act = ai.search()
                 tong_nodes += ai.expanded_count
                 tong_time += ai.time_used
@@ -609,8 +648,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Pacman AI Search - Nhom 07")
     parser.add_argument("--ui", action="store_true", help="Chay giao dien do hoa Vintage Arcade (Pygame)")
     parser.add_argument("--map", type=str, default=None, help="Duong dan toi file ban do .txt (vd: maps/test_map.txt)")
-    parser.add_argument("--algo", type=str, default=None, help="Thuat toan: DFS, BFS, UCS, GREEDY, ASTAR, MINIMAX, ALPHABETA")
-    parser.add_argument("--depth", type=int, default=2, help="Do sau tim kiem cho Minimax / Alpha-Beta (mac dinh: 2)")
+    parser.add_argument("--algo", type=str, default=None, help="Thuat toan: DFS, BFS, UCS, GREEDY, ASTAR, MINIMAX, ALPHABETA, EXPECTIMAX")
+    parser.add_argument("--depth", type=int, default=2, help="Do sau tim kiem cho Minimax / Alpha-Beta / Expectimax (mac dinh: 2)")
     parser.add_argument("--mode", type=str, default="match", choices=["step", "match"], help="Che do doi khang: step (1 buoc) hoac match (mo phong tran)")
 
     args = parser.parse_args()

@@ -3,7 +3,9 @@ import os
 import pygame
 from ui.controller import GameController
 from ui.renderer import MazeRenderer
+from ui.components import DirectionalPad
 from ui.theme import init_fonts, GHOST_COLORS, COLOR_PACMAN
+from src.pacman.player_controller import DirectionInputBuffer, PlayerSession
 
 
 class TestUIController(unittest.TestCase):
@@ -59,7 +61,6 @@ class TestUIController(unittest.TestCase):
             # Kiểm tra không ghost nào thuộc họ vàng thuần
             self.assertFalse(g_color[0] > 200 and g_color[1] > 200 and g_color[2] < 50)
 
-
     def test_path_trail_recording(self):
         self.controller.set_map_file("maps/single_small_few_solvable.txt")
         self.controller.set_algorithm("A*")
@@ -78,6 +79,51 @@ class TestUIController(unittest.TestCase):
         renderer.draw_path_trail(surf, sample_trail, is_win=False)
         renderer.draw_path_trail(surf, sample_trail, is_win=True)
         # Không có ngoại lệ nào xảy ra
+
+    def test_play_mode_switch_and_wasd_controls(self):
+        """Kiểm tra chuyển đổi chế độ AI <-> PLAYER và điều khiển Pacman bằng WASD / Phím mũi tên"""
+        self.controller.set_map_file("maps/single_small_few_solvable.txt")
+        self.assertEqual(self.controller.play_mode, "AI")
+
+        # Chuyển sang chế độ Người chơi
+        self.controller.set_play_mode("PLAYER")
+        self.assertEqual(self.controller.play_mode, "PLAYER")
+        self.assertEqual(self.controller.status, "READY")
+        self.assertEqual(self.controller.pacman_pos, (1, 1))
+
+        # Điều khiển sang phải bằng phím D và xuống dưới bằng phím S
+        self.controller.handle_player_key_down(pygame.K_d)
+        self.assertEqual(self.controller.pacman_pos, (1, 2))
+        self.assertEqual(self.controller.facing_dir, "RIGHT")
+        self.assertEqual(self.controller.steps_taken, 1)
+        self.assertEqual(self.controller.status, "RUNNING")
+
+        # Reset cooldown để bước tiếp trong unit test
+        self.controller._last_player_step_time = 0.0
+        self.controller.handle_player_key_down(pygame.K_DOWN)
+        self.assertEqual(self.controller.pacman_pos, (2, 2))
+        self.assertEqual(self.controller.facing_dir, "DOWN")
+        self.assertEqual(self.controller.steps_taken, 2)
+
+        # Thử đi lên tường tại (1, 2) -> (0, 2) là '#' không được đi xuyên tường
+        self.controller._last_player_step_time = 0.0
+        self.controller.trigger_player_direction("UP")
+        self.assertEqual(self.controller.pacman_pos, (1, 2))
+        self.controller._last_player_step_time = 0.0
+        self.controller.trigger_player_direction("UP")
+        self.assertEqual(self.controller.pacman_pos, (1, 2))  # Chặn bởi tường hàng 0
+
+    def test_dpad_component_rendering(self):
+        """Kiểm tra component DirectionalPad hoạt động và render không lỗi"""
+        triggered = []
+        dpad = DirectionalPad(pygame.Rect(0, 0, 420, 80), on_direction=lambda act: triggered.append(act))
+        dpad.sync_active_directions({"UP", "RIGHT"})
+        self.assertTrue(dpad.btn_up.is_active)
+        self.assertTrue(dpad.btn_right.is_active)
+        self.assertFalse(dpad.btn_left.is_active)
+
+        surf = pygame.Surface((420, 80))
+        dpad.draw(surf, current_dir="UP")
 
 
 if __name__ == "__main__":

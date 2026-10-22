@@ -3,33 +3,33 @@ BANG KET QUA THUC NGHIEM SO SANH THUAT TOAN TIM KIEM (NHOM 07)
 ==========================================================================================
 Map                            | Algorithm  | Found  | Steps   | Cost    | Nodes   | Time (ms) 
 ------------------------------------------------------------------------------------------
-single_small_few_solvable      | DFS        | YES    | 50      | 50      | 51      | 0.27      
-single_small_few_solvable      | BFS        | YES    | 18      | 18      | 79      | 0.30      
-single_small_few_solvable      | UCS        | YES    | 18      | 18      | 79      | 0.34      
-single_small_few_solvable      | Greedy     | YES    | 18      | 18      | 19      | 0.07      
-single_small_few_solvable      | A*         | YES    | 18      | 18      | 79      | 0.60      
-dead_end_maze                  | DFS        | YES    | 24      | 24      | 25      | 0.07      
-dead_end_maze                  | BFS        | YES    | 12      | 12      | 25      | 0.18      
-dead_end_maze                  | UCS        | YES    | 12      | 12      | 25      | 0.13      
-dead_end_maze                  | Greedy     | YES    | 12      | 12      | 13      | 0.07      
-dead_end_maze                  | A*         | YES    | 12      | 12      | 15      | 0.07      
-large_map (Single-Goal)        | DFS        | YES    | 85      | 85      | 180     | 0.86      
-large_map (Single-Goal)        | BFS        | YES    | 23      | 23      | 175     | 0.74      
-large_map (Single-Goal)        | UCS        | YES    | 23      | 23      | 175     | 0.89      
-large_map (Single-Goal)        | Greedy     | YES    | 23      | 23      | 26      | 0.10      
-large_map (Single-Goal)        | A*         | YES    | 23      | 23      | 65      | 0.23      
-no_solution_map                | DFS        | NO     | N/A     | N/A     | 6       | 0.04      
-no_solution_map                | BFS        | NO     | N/A     | N/A     | 6       | 0.02      
-no_solution_map                | UCS        | NO     | N/A     | N/A     | 6       | 0.02      
-no_solution_map                | Greedy     | NO     | N/A     | N/A     | 6       | 0.03      
-no_solution_map                | A*         | NO     | N/A     | N/A     | 6       | 0.03      
-multi_goal_test                | DFS        | YES    | 65      | 65      | 71      | 0.23      
-multi_goal_test                | BFS        | YES    | 27      | 27      | 256     | 0.80      
-multi_goal_test                | UCS        | YES    | 27      | 27      | 256     | 0.96      
-multi_goal_test                | Greedy     | YES    | 27      | 27      | 113     | 0.55      
-multi_goal_test                | A*         | YES    | 27      | 27      | 110     | 0.57      
-multi_large_many_solvable      | DFS        | YES    | 584     | 584     | 1027    | 5.26      
-multi_large_many_solvable      | BFS        | YES    | 188     | 188     | 19229   | 76.17     
-multi_large_many_solvable      | UCS        | YES    | 188     | 188     | 19229   | 105.89    
-multi_large_many_solvable      | Greedy     | YES    | 248     | 248     | 9186    | 58.13     
-multi_large_many_solvable      | A*         | YES    | 188     | 188     | 14896   | 95.84     
+single_small_few_solvable      | DFS        | YES    | 50      | 50      | 51      | 0.50      
+single_small_few_solvable      | BFS        | YES    | 18      | 18      | 79      | 1.41      
+single_small_few_solvable      | UCS        | YES    | 18      | 18      | 79      | 2.02      
+single_small_few_solvable      | Greedy     | YES    | 18      | 18      | 19      | 1.21      
+single_small_few_solvable      | A*         | YES    | 18      | 18      | 19      | 0.60      
+dead_end_maze                  | DFS        | YES    | 24      | 24      | 25      | 0.27      
+dead_end_maze                  | BFS        | YES    | 12      | 12      | 25      | 0.34      
+dead_end_maze                  | UCS        | YES    | 12      | 12      | 25      | 0.20      
+dead_end_maze                  | Greedy     | YES    | 12      | 12      | 13      | 1.81      
+dead_end_maze                  | A*         | YES    | 12      | 12      | 13      | 1.87      
+large_map (Single-Goal)        | DFS        | YES    | 85      | 85      | 180     | 1.89      
+large_map (Single-Goal)        | BFS        | YES    | 23      | 23      | 175     | 2.67      
+large_map (Single-Goal)        | UCS        | YES    | 23      | 23      | 175     | 1.59      
+large_map (Single-Goal)        | Greedy     | YES    | 23      | 23      | 24      | 1.69      
+large_map (Single-Goal)        | A*         | YES    | 23      | 23      | 24      | 2.63      
+no_solution_map                | DFS        | NO     | N/A     | N/A     | 6       | 0.07      
+no_solution_map                | BFS        | NO     | N/A     | N/A     | 6       | 0.10      
+no_solution_map                | UCS        | NO     | N/A     | N/A     | 6       | 0.07      
+no_solution_map                | Greedy     | NO     | N/A     | N/A     | 6       | 0.70      
+no_solution_map                | A*         | NO     | N/A     | N/A     | 6       | 0.74      
+multi_goal_test                | DFS        | YES    | 65      | 65      | 71      | 0.61      
+multi_goal_test                | BFS        | YES    | 27      | 27      | 256     | 4.36      
+multi_goal_test                | UCS        | YES    | 27      | 27      | 256     | 2.83      
+multi_goal_test                | Greedy     | YES    | 27      | 27      | 28      | 1.39      
+multi_goal_test                | A*         | YES    | 27      | 27      | 28      | 1.96      
+multi_large_many_solvable      | DFS        | YES    | 584     | 584     | 1027    | 14.09     
+multi_large_many_solvable      | BFS        | YES    | 188     | 188     | 19229   | 219.30    
+multi_large_many_solvable      | UCS        | YES    | 188     | 188     | 19229   | 274.07    
+multi_large_many_solvable      | Greedy     | YES    | 188     | 188     | 197     | 18.79     
+multi_large_many_solvable      | A*         | YES    | 188     | 188     | 310     | 21.65     

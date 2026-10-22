@@ -27,6 +27,7 @@ from src.search.a_star import AStar
 from src.logic_pacman_vs_ghost.adv_problem import AdvProblem
 from src.logic_pacman_vs_ghost.minimax import Minimax
 from src.logic_pacman_vs_ghost.alpha_beta import AlphaBeta
+from src.logic_pacman_vs_ghost.expectimax import Expectimax
 
 
 # Quy uoc chi phi dia hinh: '~' = 2, 'S' = 3, con lai = 1
@@ -42,50 +43,11 @@ def apply_cost_mode(problem, gmap, spawn, cost_mode="weighted"):
     - 'uniform' : Moi buoc di deu co chi phi = 1 (Chi phi dong nhat)
     - 'weighted': Tinh chi phi theo dia hinh '~' = 2, 'S' = 3 (Chi phi khong dong nhat)
     """
-    orig_measure_path_cost = problem.measure_path_cost
-
-    def get_pos(state):
-        if isinstance(state, tuple) and len(state) == 2 and isinstance(state[0], tuple):
-            return state[0]
-        return state
-
     def cell_cost(r, c):
         if cost_mode == "uniform":
             return 1
         ch = gmap[r][c]
         return TERRAIN_COSTS.get(ch, 1)
-
-    def custom_step_cost(*args):
-        if cost_mode == "uniform":
-            return 1
-        next_state = args[-1]
-        pos = get_pos(next_state)
-        if isinstance(pos, tuple) and len(pos) == 2:
-            return cell_cost(pos[0], pos[1])
-        return 1
-
-    def custom_measure_path_cost(actions):
-        if actions is None:
-            return -1
-        if cost_mode == "uniform":
-            return len(actions)
-
-        move_delta = {
-            "UP": (-1, 0), "U": (-1, 0), "N": (-1, 0), "North": (-1, 0),
-            "DOWN": (1, 0), "D": (1, 0), "S": (1, 0), "South": (1, 0),
-            "LEFT": (0, -1), "L": (0, -1), "W": (0, -1), "West": (0, -1),
-            "RIGHT": (0, 1), "R": (0, 1), "E": (0, 1), "East": (0, 1),
-        }
-        r, c = spawn
-        total_cost = 0
-        for act in actions:
-            if act in move_delta:
-                dr, dc = move_delta[act]
-                r, c = r + dr, c + dc
-                total_cost += cell_cost(r, c)
-            else:
-                return orig_measure_path_cost(actions)
-        return total_cost
 
     if cost_mode == "uniform":
         problem.cost_fn = lambda pos: 1
@@ -95,7 +57,6 @@ def apply_cost_mode(problem, gmap, spawn, cost_mode="weighted"):
 
 
 def run_search_benchmark():
-    # Cau truc: (ten_hien_thi, duong_dan_file, che_do ["single" | "multi"])
     maps = [
         # 1. Don muc tieu (Chi phi dong nhat)
         ("single_small_few_solvable", "maps/single_small_few_solvable.txt", "single"),
@@ -194,13 +155,9 @@ def run_uniform_vs_weighted_benchmark():
     print("   2. THUC NGHIEM CHI PHI DONG NHAT vs KHONG DONG NHAT (~=2, S=3)")
     print("=================================================================")
 
-    # Cau truc: (ten_map, duong_dan_file, che_do_goal ["single"|"multi"], che_do_cost ["uniform"|"weighted"])
     test_configs = [
-        # Map 1: Bay duong tat dam lay (Single-Goal)
         ("swamp_shortcut (Dong nhat)", "maps/weighted_swamp_shortcut_dilemma.txt", "single", "uniform"),
         ("swamp_shortcut (Khong dong nhat)", "maps/weighted_swamp_shortcut_dilemma.txt", "single", "weighted"),
-
-        # Map 2: Vung ngap man nhieu Food (Multi-Goal)
         ("multi_wetlands (Dong nhat)", "maps/weighted_multi_food_wetlands.txt", "multi", "uniform"),
         ("multi_wetlands (Khong dong nhat)", "maps/weighted_multi_food_wetlands.txt", "multi", "weighted"),
     ]
@@ -231,7 +188,6 @@ def run_uniform_vs_weighted_benchmark():
             else:
                 problem = PMSearchProblem(spawn, final_goal, gmap)
 
-            # Ap dung che do Dong nhat (uniform) hoac Khong dong nhat (weighted: ~ = 2, S = 3)
             problem = apply_cost_mode(problem, gmap, spawn, cost_mode=cost_mode)
 
             searcher = algo_class(problem)
@@ -368,7 +324,7 @@ def run_heuristic_evaluation():
 
 def run_adversarial_benchmark():
     print("=================================================================")
-    print("   4. THUC NGHIEM SO SANH DOI KHANG (MINIMAX vs ALPHA-BETA)      ")
+    print("   4. THUC NGHIEM SO SANH DOI KHANG (MINIMAX, ALPHA-BETA, EXPECTIMAX)")
     print("=================================================================")
 
     adv_maps = [
@@ -407,6 +363,12 @@ def run_adversarial_benchmark():
             nodes_ab = ab.expanded_count
             time_ab = ab.time_used * 1000.0
 
+            ex = Expectimax(prob, depth_limit=d)
+            act_ex = ex.search()
+            val_ex = ex.last_value
+            nodes_ex = ex.expanded_count
+            time_ex = ex.time_used * 1000.0
+
             match = (act_mm == act_ab) and (val_mm == val_ab)
             prune_pct = round((1.0 - nodes_ab / nodes_mm) * 100, 1) if nodes_mm > 0 else 0.0
 
@@ -415,40 +377,44 @@ def run_adversarial_benchmark():
                 "depth": d,
                 "act_mm": act_mm,
                 "act_ab": act_ab,
+                "act_ex": act_ex,
                 "val_mm": val_mm,
                 "val_ab": val_ab,
+                "val_ex": val_ex,
                 "nodes_mm": nodes_mm,
                 "nodes_ab": nodes_ab,
+                "nodes_ex": nodes_ex,
                 "time_mm_ms": round(time_mm, 2),
                 "time_ab_ms": round(time_ab, 2),
+                "time_ex_ms": round(time_ex, 2),
                 "prune_pct": prune_pct,
                 "match": match
             }
             results.append(res)
 
             match_str = "MATCH" if match else "MISMATCH"
-            print(f"[{map_name:28}] Depth {d} | MM: {nodes_mm:>5} nodes ({time_mm:>6.2f}ms) | AB: {nodes_ab:>5} nodes ({time_ab:>6.2f}ms) | Prune: {prune_pct:>5.1f}% | {match_str} (Act: {act_ab})")
+            print(f"[{map_name:28}] Depth {d} | MM: {nodes_mm:>5} ({time_mm:>5.2f}ms) | AB: {nodes_ab:>5} ({time_ab:>5.2f}ms, -{prune_pct:>4.1f}%) | EX: {nodes_ex:>5} ({time_ex:>5.2f}ms) | {match_str}")
 
     os.makedirs("results", exist_ok=True)
     csv_file = "results/adversarial_benchmark.csv"
     with open(csv_file, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=[
-            "map", "depth", "act_mm", "act_ab", "val_mm", "val_ab",
-            "nodes_mm", "nodes_ab", "time_mm_ms", "time_ab_ms", "prune_pct", "match"
+            "map", "depth", "act_mm", "act_ab", "act_ex", "val_mm", "val_ab", "val_ex",
+            "nodes_mm", "nodes_ab", "nodes_ex", "time_mm_ms", "time_ab_ms", "time_ex_ms", "prune_pct", "match"
         ])
         writer.writeheader()
         writer.writerows(results)
 
     txt_file = "results/adversarial_benchmark.txt"
     with open(txt_file, "w", encoding="utf-8") as f:
-        f.write("=" * 98 + "\n")
-        f.write("BANG KET QUA THUC NGHIEM SO SANH MINIMAX VA ALPHA-BETA PRUNING (NHOM 07)\n")
-        f.write("=" * 98 + "\n")
-        f.write(f"{'Map':<28} | {'Depth':<5} | {'Action':<6} | {'Value':<8} | {'MM Nodes':<8} | {'AB Nodes':<8} | {'Pruning %':<10} | {'Speedup':<8}\n")
-        f.write("-" * 98 + "\n")
+        f.write("=" * 116 + "\n")
+        f.write("BANG KET QUA THUC NGHIEM SO SANH MINIMAX, ALPHA-BETA PRUNING VA EXPECTIMAX (NHOM 07)\n")
+        f.write("=" * 116 + "\n")
+        f.write(f"{'Map':<28} | {'Depth':<5} | {'Action':<6} | {'Value':<8} | {'MM Nodes':<8} | {'AB Nodes':<8} | {'EX Nodes':<8} | {'AB Prune%':<10} | {'AB Speedup':<10}\n")
+        f.write("-" * 116 + "\n")
         for r in results:
             speedup = round(r["time_mm_ms"] / max(0.001, r["time_ab_ms"]), 2) if r["time_ab_ms"] > 0 else 1.0
-            f.write(f"{r['map']:<28} | {r['depth']:<5} | {str(r['act_ab']):<6} | {r['val_ab']:<8} | {r['nodes_mm']:<8} | {r['nodes_ab']:<8} | {r['prune_pct']:<9}% | {speedup:<7}x\n")
+            f.write(f"{r['map']:<28} | {r['depth']:<5} | {str(r['act_ab']):<6} | {r['val_ab']:<8} | {r['nodes_mm']:<8} | {r['nodes_ab']:<8} | {r['nodes_ex']:<8} | {r['prune_pct']:<9}% | {speedup:<9}x\n")
 
     print(f"\n-> Da luu ket qua vao: {csv_file} va {txt_file}\n")
     return results

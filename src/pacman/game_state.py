@@ -9,7 +9,7 @@ class GameState:
         self.score = score
         self.game_map = game_map
         self.status = status
-    
+#Hàm tạo bản copy của vị trí pacman    
     def copy_pacman_position(self, new_position):
         return GameState(new_position,self.ghost_positions,
                         self.food,self.score,self.game_map)
@@ -18,7 +18,7 @@ class GameState:
     def check_valid_position
     Lưu vị trí hiện tại có hợp lệ không, có trùng với tường hay ko.
     """
-    
+# Kiểm tra xem tọa độ có hợp lệ không   
     def check_valid_position(self, position):
         r, c = position
         if r < 0 or r >= len(self.game_map):
@@ -34,7 +34,7 @@ class GameState:
     1) Tạo 1 state mới nếu nếu check = True
     2) Để im state cũ ko cập nhật gì mới 
     """
-    
+# Hàm di chuyển của pacman, trả vệ gamestate mới chứa vị trí của pacman đã thay đổi   
     def move(self, action):
         r, c = self.pacman_position
         if action == "UP":
@@ -62,7 +62,7 @@ class GameState:
     Check 2 trạng thái có trùng nhau ko => phục vụ Search không bị rơi vào vòng lặp
     """
     
-    
+#Hàm so sánh các kiểu dữ liệu của phần tử 
     def __eq__(self, other):
         if isinstance(other,GameState) == False:
             return False
@@ -76,6 +76,7 @@ class GameState:
     """
     Tạo mã cho vistied check nhanh = set
     """
+# Hàm băm để xác định vị trí nhanh hơn, hỗ trợ tra vị trí
     def __hash__(self):
         return hash((
             self.pacman_position,
@@ -84,7 +85,7 @@ class GameState:
             self.score
         ))
         
-    
+#Hàm di chuyển của ghost, và trả về gamestate mới có thay đổi tọa đọ của ghost
     def move_ghost(self,ghost_index,action):
         ghost = Ghost(self.ghost_positions[ghost_index])
         new_position = ghost.get_next_position(action,self.game_map)
@@ -101,7 +102,8 @@ class GameState:
             self.score,
             self.game_map
         )
-        
+# Hàm này xét các hướng pacman và ghost có thể đi được tính từ vị trí hiện tại
+# trả về tọa độ nếu dịch chuyển, VD:(right, c+=1)       
     def get_pacman_successors(self):
         successors = []
         actions = ["UP", "DOWN", "LEFT", "RIGHT"]
@@ -133,10 +135,11 @@ class GameState:
     1) Ko có gì xảy ra => state mới đc thêm vào 
     2) Vachạm =>  dừng
     """
-    
+#kiểm tra xem pacman đã bị ma bắt chưa bằng cách kiểm tra xem có trùng tọa độ không
     def check_pacman_caught(self):
         return self.pacman_position in self.ghost_positions
-    
+
+# Hàm mô phỏng đúng 1 lượt chơi thực tế (1 nước đi)    
     def step(self, pacman_action, target, is_final_goal=False):
         next_state = self.move(pacman_action)
         if next_state is None:
@@ -155,6 +158,7 @@ class GameState:
         # Cho từng Ghost di chuyển
         for ghost_index in range(len(next_state.ghost_positions)):
             ghost = Ghost(next_state.ghost_positions[ghost_index])
+            #other ghost, xác định lại những ghost còn lại, ghost đầu đã đi thì không đi nữa
             other_ghosts = [
                 pos for idx, pos in enumerate(next_state.ghost_positions) if idx != ghost_index
             ]

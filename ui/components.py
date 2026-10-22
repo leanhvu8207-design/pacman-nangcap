@@ -417,3 +417,109 @@ class ScrollableLogBox:
             thumb_y = self.rect.y + 22 + int((self.scroll_offset / max_offset) * (bar_track_h - thumb_h))
             thumb_rect = pygame.Rect(self.rect.right - 14, thumb_y, 4, thumb_h)
             pygame.draw.rect(surface, BORDER_HIGHLIGHT, thumb_rect, border_radius=2)
+
+
+
+class DirectionalPad:
+    """
+    Cụm nút điều hướng D-Pad phong cách máy thùng Arcade cho chế độ Người chơi (Player Mode).
+    Vừa cho phép click/nhấn giữ bằng chuột trên màn hình, vừa đồng bộ hiệu ứng sáng đèn
+    khi người chơi bấm phím WASD hoặc phím mũi tên (↑ ↓ ← →) trên bàn phím.
+    """
+
+    def __init__(self, rect, on_direction=None):
+        self.rect = pygame.Rect(rect)
+        self.on_direction = on_direction
+        self.held_mouse_action = None
+
+        # Chia vùng: Bên trái là bảng hướng dẫn phím tắt, bên phải là cụm 4 phím điều hướng chữ T ngược (WASD)
+        dpad_w = 186
+        self.info_rect = pygame.Rect(self.rect.x, self.rect.y, self.rect.width - dpad_w - 8, self.rect.height)
+        dpad_x = self.rect.right - dpad_w
+
+        btn_w = 58
+        btn_h = (self.rect.height - 4) // 2
+        gap_x = 5
+        top_y = self.rect.y
+        bot_y = self.rect.y + btn_h + 4
+
+        self.btn_up = Button(
+            pygame.Rect(dpad_x + btn_w + gap_x, top_y, btn_w, btn_h),
+            "▲ W/↑",
+            on_click=lambda: self._trigger("UP"),
+            font_key="small"
+        )
+        self.btn_left = Button(
+            pygame.Rect(dpad_x, bot_y, btn_w, btn_h),
+            "◀ A/←",
+            on_click=lambda: self._trigger("LEFT"),
+            font_key="small"
+        )
+        self.btn_down = Button(
+            pygame.Rect(dpad_x + btn_w + gap_x, bot_y, btn_w, btn_h),
+            "▼ S/↓",
+            on_click=lambda: self._trigger("DOWN"),
+            font_key="small"
+        )
+        self.btn_right = Button(
+            pygame.Rect(dpad_x + 2 * (btn_w + gap_x), bot_y, btn_w, btn_h),
+            "▶ D/→",
+            on_click=lambda: self._trigger("RIGHT"),
+            font_key="small"
+        )
+
+        self.dir_buttons = {
+            "UP": self.btn_up,
+            "LEFT": self.btn_left,
+            "DOWN": self.btn_down,
+            "RIGHT": self.btn_right,
+        }
+
+    def _trigger(self, action):
+        if self.on_direction:
+            self.on_direction(action)
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            self.held_mouse_action = None
+
+        for act, btn in self.dir_buttons.items():
+            if btn.handle_event(event):
+                self.held_mouse_action = act
+                return True
+        return False
+
+    def get_held_mouse_action(self):
+        """Nếu người dùng đang nhấn giữ chuột trái trên một nút D-Pad thì trả về hướng đó"""
+        if self.held_mouse_action and pygame.mouse.get_pressed()[0]:
+            btn = self.dir_buttons.get(self.held_mouse_action)
+            if btn and btn.rect.collidepoint(pygame.mouse.get_pos()):
+                return self.held_mouse_action
+        self.held_mouse_action = None
+        return None
+
+    def sync_active_directions(self, active_dirs):
+        """Đồng bộ trạng thái sáng đèn của các nút D-Pad với bàn phím và chuột"""
+        mouse_act = self.get_held_mouse_action()
+        for act, btn in self.dir_buttons.items():
+            btn.is_active = (act in active_dirs) or (act == mouse_act)
+
+    def draw(self, surface, current_dir="RIGHT"):
+        # Vẽ khung hướng dẫn điều khiển bên trái
+        pygame.draw.rect(surface, BG_PANEL_ALT, self.info_rect, border_radius=5)
+        pygame.draw.rect(surface, BORDER_COLOR, self.info_rect, width=1, border_radius=5)
+
+        font_sub = get_font("subtitle")
+        font_sm = get_font("small")
+
+        t1 = font_sub.render("ĐIỀU KHIỂN TAY", True, COLOR_PACMAN)
+        t2 = font_sm.render("Phím: WASD / ↑↓←→", True, TEXT_HEADER)
+        t3 = font_sm.render(f"Hướng: {current_dir} (Bấm/Giữ)", True, TEXT_OLD_PAPER)
+
+        surface.blit(t1, (self.info_rect.x + 10, self.info_rect.y + 6))
+        surface.blit(t2, (self.info_rect.x + 10, self.info_rect.y + 28))
+        surface.blit(t3, (self.info_rect.x + 10, self.info_rect.y + 46))
+
+        # Vẽ 4 nút D-Pad bên phải
+        for btn in self.dir_buttons.values():
+            btn.draw(surface)

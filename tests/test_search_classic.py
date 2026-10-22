@@ -171,6 +171,33 @@ class TestClassicalSearch(unittest.TestCase):
         total_cost = prob.measure_path_cost(actions)
         self.assertGreater(total_cost, len(actions))
 
+    def test_upgraded_heuristics_and_astar_efficiency(self):
+        """
+        Kiểm tra heuristic nâng cấp (Dead-end/Corridor + Reverse-Dijkstra MST) và A* tie-breaking:
+        Đảm bảo tính tối ưu (cùng chi phí với UCS) và giảm mạnh số node mở rộng.
+        """
+        # 1. Single-goal trên bản đồ mở: A* tie-breaking phải mở rộng ít hơn hẳn UCS
+        open_map = load_map("maps/single_small_few_solvable.txt")
+        s_open, g_open, _ = get_map_info(open_map)
+        prob_open = PMSearchProblem(s_open, g_open[0], open_map)
+        ucs_open = UCS(prob_open)
+        astar_open = AStar(prob_open)
+        act_ucs_open = ucs_open.search()
+        act_astar_open = astar_open.search()
+        self.assertEqual(prob_open.measure_path_cost(act_ucs_open), prob_open.measure_path_cost(act_astar_open))
+        self.assertLess(astar_open.expanded_count, ucs_open.expanded_count)
+
+        # 2. Multi-goal có trọng số địa hình (wetlands): A* với MST + Dijkstra ngược tối ưu chi phí và giảm >90% node
+        wet_map = load_map("maps/weighted_multi_food_wetlands.txt")
+        s_wet, g_wet, _, f_wet = get_map_info(wet_map, return_foods=True)
+        prob_wet = MultiGoal(s_wet, tuple(f_wet), wet_map, goal=g_wet[0])
+        ucs_wet = UCS(prob_wet)
+        astar_wet = AStar(prob_wet)
+        act_ucs_wet = ucs_wet.search()
+        act_astar_wet = astar_wet.search()
+        self.assertEqual(prob_wet.measure_path_cost(act_ucs_wet), prob_wet.measure_path_cost(act_astar_wet))
+        self.assertLess(astar_wet.expanded_count, ucs_wet.expanded_count * 0.1)
+
 
 if __name__ == "__main__":
     unittest.main()

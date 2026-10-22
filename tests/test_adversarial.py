@@ -4,6 +4,7 @@ from src.utils.map_info import get_map_info
 from src.logic_pacman_vs_ghost.adv_problem import AdvProblem
 from src.logic_pacman_vs_ghost.minimax import Minimax
 from src.logic_pacman_vs_ghost.alpha_beta import AlphaBeta
+from src.logic_pacman_vs_ghost.expectimax import Expectimax
 from src.pacman.game_state import GameState
 
 
@@ -40,7 +41,7 @@ class TestAdversarialSearch(unittest.TestCase):
 
         self.assertEqual(act_mm, act_ab)
         self.assertEqual(mm.last_value, ab.last_value)
-        # Số node của Alpha-Beta phải giảm đáng kể so với Minimax
+        # Số node của Alpha-Beta phải giảm đáng kể so với Minimax (nhờ Move Ordering)
         self.assertLess(ab.expanded_count, mm.expanded_count)
 
     def test_pacman_wins_on_small_map_simulation(self):
@@ -71,13 +72,14 @@ class TestAdversarialSearch(unittest.TestCase):
         """
         Kiểm tra Pacman tuyệt đối không đi vào ô có Ghost ngay bước đầu tiên nếu có lựa chọn khác.
         """
-        # Giả lập tình huống Pacman ở kề Ghost
         problem = AdvProblem((1, 2), [(1, 3)], (1, 4), self.small_map)
         ab = AlphaBeta(problem, depth_limit=2)
         action = ab.search()
-
-        # Pacman không được đi RIGHT (đâm vào Ghost tại (1, 3))
         self.assertNotEqual(action, "RIGHT", "Pacman không được đâm thẳng vào Ghost khi có lối khác!")
+
+        ex = Expectimax(problem, depth_limit=2)
+        action_ex = ex.search()
+        self.assertNotEqual(action_ex, "RIGHT", "Expectimax không được đâm thẳng vào Ghost khi có lối khác!")
 
     def test_minimax_and_alpha_beta_equivalence_with_recent_positions(self):
         """
@@ -93,6 +95,32 @@ class TestAdversarialSearch(unittest.TestCase):
             self.assertEqual(act_mm, act_ab, f"Hành động không khớp tại depth={depth} với recent_positions")
             self.assertEqual(mm.last_value, ab.last_value, f"Giá trị tối ưu không khớp tại depth={depth} với recent_positions")
             self.assertLessEqual(ab.expanded_count, mm.expanded_count)
+
+    def test_expectimax_wins_and_high_depth_no_freeze(self):
+        """
+        Kiểm tra thuật toán mới Expectimax chiến thắng trên map nhỏ và kiểm tra chống đơ (anti-freeze)
+        ở độ sâu cao (depth=5) trên bản đồ lớn có 3 Ghost (large_map.txt).
+        """
+        # 1. Expectimax thắng trận trên adversarial_small.txt
+        state = GameState(self.s_spawn, self.s_ghosts.copy(), set(), 0, self.small_map)
+        target = self.s_goals[0]
+        for _ in range(45):
+            prob = AdvProblem(state.pacman_position, state.ghost_positions, target, self.small_map)
+            ex = Expectimax(prob, depth_limit=3)
+            act = ex.search()
+            self.assertIsNotNone(act)
+            state = state.step(act, target)
+            if state.status in ["WIN", "LOSE"]:
+                break
+        self.assertEqual(state.status, "WIN", "Expectimax phải chiến thắng trên bản đồ nhỏ!")
+
+        # 2. Kiểm tra chống đơ ở depth = 5 trên bản đồ lớn 3 Ghost (thời gian phải < 0.6s)
+        prob_large = AdvProblem(self.t_spawn, self.t_ghosts, self.t_goals[0], self.test_map)
+        for algo_cls in (Minimax, AlphaBeta, Expectimax):
+            solver = algo_cls(prob_large, depth_limit=5)
+            act = solver.search()
+            self.assertIsNotNone(act)
+            self.assertLess(solver.time_used, 0.65, f"{algo_cls.__name__} bị chậm ở depth=5!")
 
 
 if __name__ == "__main__":

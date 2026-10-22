@@ -22,8 +22,9 @@ Bài tập lớn mô phỏng lại trò chơi Pacman nhằm cài đặt và th�
 1. **Tìm kiếm cổ điển (Classic Search):**
    - Hỗ trợ tìm đường đơn mục tiêu (Single-goal) và gom nhiều thức ăn (Multi-goal).
    - Hỗ trợ bản đồ có trọng số địa hình: Nước (`~`, chi phí 2) và Đầm lầy (`S`, chi phí 3).
-   - Cài đặt 5 thuật toán: DFS, BFS, UCS, Greedy Best-First Search và A*.
-   - Với bài toán gom nhiều thức ăn (Multi-goal), hàm heuristic sử dụng khoảng cách Manhattan lớn nhất (Max Manhattan Distance) đến các thức ăn còn lại, đảm bảo tính admissible và consistent, giúp A* tìm được đường đi tối ưu với tốc độ tính toán nhanh.
+   - Cài đặt 5 thuật toán: DFS, BFS, UCS, Greedy Best-First Search và A* (kết hợp tie-breaking theo $h(n)$ và cắt tỉa `best_g`).
+   - Với bài toán đơn mục tiêu (`PMSearchProblem`), hàm heuristic kết hợp khoảng cách Manhattan, phạt vật cản chắn trực tiếp (Line-of-Sight/Corner) và tỉa ngõ cụt / lan truyền hành lang hẹp (Dead-end Peeling & Corridor Lookahead).
+   - Với bài toán gom nhiều thức ăn (`MultiGoal`), hàm heuristic kết hợp khoảng cách đường đi ngắn nhất thực tế theo địa hình (Reverse Dijkstra) và Cây khung nhỏ nhất (Minimum Spanning Tree - Prim) có xét đích cuối `Goal`, đảm bảo tính *admissible* và *consistent*, giúp A* giảm tới 98%–99.5% số node mở rộng.
 
 2. **Tìm kiếm đối kháng (Adversarial Search):**
    - Mô phỏng đối đầu giữa Pacman (MAX) và các Ghost (MIN).

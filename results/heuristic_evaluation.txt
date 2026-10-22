@@ -3,10 +3,10 @@ DANH GIA HEURISTIC: SO SANH UCS, A*(h=0) VA A* VOI HEURISTIC DE XUAT
 =====================================================================================
 Test Case                      | UCS Nodes  | A*(h=0) Nodes  | A*(h) Nodes  | Reduction (%)
 -------------------------------------------------------------------------------------
-single_small_few_solvable      | 79         | 79             | 79           | 0.0         %
-dead_end_maze (Single-Goal)    | 25         | 25             | 15           | 40.0        %
-large_map (Single-Goal)        | 175        | 175            | 65           | 62.9        %
-swamp_shortcut (Weighted)      | 50         | 50             | 37           | 26.0        %
-multi_goal_test (Multi-Goal)   | 256        | 256            | 110          | 57.0        %
-multi_large_many_solvable      | 19229      | 19229          | 14896        | 22.5        %
-multi_wetlands (Weighted)      | 16971      | 16971          | 5039         | 70.3        %
+single_small_few_solvable      | 79         | 79             | 19           | 75.9        %
+dead_end_maze (Single-Goal)    | 25         | 25             | 13           | 48.0        %
+large_map (Single-Goal)        | 175        | 175            | 24           | 86.3        %
+swamp_shortcut (Weighted)      | 50         | 50             | 30           | 40.0        %
+multi_goal_test (Multi-Goal)   | 256        | 256            | 28           | 89.1        %
+multi_large_many_solvable      | 19229      | 19229          | 310          | 98.4        %
+multi_wetlands (Weighted)      | 16971      | 16971          | 92           | 99.5        %
