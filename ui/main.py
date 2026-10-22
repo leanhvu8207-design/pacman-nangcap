@@ -6,6 +6,7 @@ Hỗ trợ chuyển đổi mượt mà giữa Chế độ Máy chơi (AI) và Ch
 import sys
 import os
 import math
+import asyncio
 import pygame
 
 # Đảm bảo đường dẫn import hoạt động tốt
@@ -403,11 +404,13 @@ class PacmanVintageUI:
     # VẼ TOÀN BỘ GIAO DIỆN
     # ==========================================================================
     def render(self):
-        # Cập nhật vòng lặp di chuyển của Người chơi (nếu đang ở chế độ PLAYER)
+        # Cập nhật vòng lặp di chuyển của Người chơi (nếu đang ở chế độ PLAYER) hoặc AI Web (Pygbag)
         if self.controller.play_mode == "PLAYER":
             held_mouse_dir = self.dpad.get_held_mouse_action()
             self.controller.update_player_loop(held_mouse_action=held_mouse_dir)
             self.dpad.sync_active_directions(self.controller.input_buffer.get_active_directions())
+        else:
+            self.controller.update_web_ai()
 
         # Nội suy mượt vị trí hiển thị 60 FPS
         self._update_smooth_positions()
@@ -666,11 +669,21 @@ class PacmanVintageUI:
         self.log_box.draw(self.screen)
 
     def run(self):
-        """Vòng lặp chính của ứng dụng"""
+        """Vòng lặp chính của ứng dụng trên Desktop"""
         while self.is_running:
             self.handle_events()
             self.render()
             self.clock.tick(60)
+
+        pygame.quit()
+
+    async def run_async(self):
+        """Vòng lặp chính bất đồng bộ tương thích với Pygbag / WebAssembly trên trình duyệt"""
+        while self.is_running:
+            self.handle_events()
+            self.render()
+            self.clock.tick(60)
+            await asyncio.sleep(0)
 
         pygame.quit()
 
@@ -679,6 +692,12 @@ def run_ui():
     """Hàm khởi chạy giao diện từ main.py hoặc dòng lệnh"""
     app = PacmanVintageUI()
     app.run()
+
+
+async def run_ui_async():
+    """Hàm khởi chạy giao diện bất đồng bộ cho Pygbag WebAssembly"""
+    app = PacmanVintageUI()
+    await app.run_async()
 
 
 if __name__ == "__main__":

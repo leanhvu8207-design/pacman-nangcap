@@ -4,6 +4,7 @@ Dự án: Pacman AI Search - Nhóm 07
 """
 
 import os
+import sys
 import glob
 import time
 import threading
@@ -87,7 +88,10 @@ class GameController:
         self.steps_taken = 0
         self.path_cost = None
 
-        # Điều khiển đa luồng & vòng lặp mô phỏng AI
+        # Điều khiển đa luồng & vòng lặp mô phỏng AI (hỗ trợ cả Desktop Threading & WebAssembly Pygbag)
+        self._is_web = (sys.platform == "emscripten")
+        self._web_ai_gen = None
+        self._web_next_step_time = 0.0
         self._thread = None
         self._stop_event = threading.Event()
         self._pause_event = threading.Event()
@@ -231,6 +235,8 @@ class GameController:
 
     def stop_execution(self):
         """Dừng luồng thực thi nền an toàn"""
+        self._web_ai_gen = None
+        self._web_next_step_time = 0.0
         if self._thread and self._thread.is_alive():
             self._stop_event.set()
             self._pause_event.set()
@@ -274,12 +280,44 @@ class GameController:
         self._pause_event.set()
         self._step_trigger.clear()
 
+        if self._is_web:
+            if self.algorithm in ["DFS", "BFS", "UCS", "GREEDY", "A*"]:
+                self._web_ai_gen = self._gen_classic_search()
+            else:
+                self._web_ai_gen = self._gen_adversarial_search()
+            self._web_next_step_time = 0.0
+            return
+
         if self.algorithm in ["DFS", "BFS", "UCS", "GREEDY", "A*"]:
             self._thread = threading.Thread(target=self._run_classic_search, daemon=True)
         else:
             self._thread = threading.Thread(target=self._run_adversarial_search, daemon=True)
 
         self._thread.start()
+
+    def update_web_ai(self):
+        """Cập nhật từng bước AI không chặn luồng chính khi chạy trên WebAssembly (Pygbag)"""
+        if not self._is_web or self._web_ai_gen is None or self.play_mode != "AI":
+            return
+
+        if self._stop_event.is_set():
+            self._web_ai_gen = None
+            return
+
+        now = time.time()
+        if not self._pause_event.is_set():
+            if self.is_stepping and self._step_trigger.is_set():
+                self._step_trigger.clear()
+            else:
+                return
+        elif now < self._web_next_step_time:
+            return
+
+        try:
+            delay = next(self._web_ai_gen)
+            self._web_next_step_time = time.time() + (delay if isinstance(delay, (int, float)) else 0.1)
+        except StopIteration:
+            self._web_ai_gen = None
 
     def pause(self):
         """Tạm dừng mô phỏng / ván chơi"""
@@ -503,6 +541,12 @@ class GameController:
     # LUỒNG THUẬT TOÁN TÌM KIẾM CỔ ĐIỂN (CLASSIC SEARCH)
     # ==========================================================================
     def _run_classic_search(self):
+        for delay in self._gen_classic_search():
+            if self._stop_event.is_set():
+                return
+            time.sleep(delay)
+
+    def _gen_classic_search(self):
         if len(self.goals) == 0 and len(self.foods) == 0:
             self.log("[LỖI] Bản đồ không có Goal (G) hoặc Food (.)!", STATUS_COLORS["ERROR"])
             self.status = "ERROR"
@@ -589,7 +633,7 @@ class GameController:
             if self._stop_event.is_set():
                 return
 
-            while not self._pause_event.is_set():
+            while not self._is_web and not self._pause_event.is_set():
                 if self._stop_event.is_set():
                     return
                 if self.is_stepping and self._step_trigger.is_set():
@@ -625,7 +669,7 @@ class GameController:
                 self.log(f"Bước {i+1}: Đi {act} -> {(curr_r, curr_c)}", TEXT_BODY)
 
             delay = max(0.02, 0.25 / max(0.1, self.speed))
-            time.sleep(delay)
+            yield delay
 
         self.status = "WIN"
         self.log(">>> CHIẾN THẮNG: PACMAN ĐÃ HOÀN THÀNH MỤC TIÊU! <<<", STATUS_COLORS["WIN"])
@@ -663,6 +707,12 @@ class GameController:
     # LUỒNG THUẬT TOÁN ĐỐI KHÁNG (MINIMAX / ALPHA-BETA / EXPECTIMAX)
     # ==========================================================================
     def _run_adversarial_search(self):
+        for delay in self._gen_adversarial_search():
+            if self._stop_event.is_set():
+                return
+            time.sleep(delay)
+
+    def _gen_adversarial_search(self):
         if len(self.goals) == 0 and len(self.foods) == 0:
             self.log("[LỖI] Bản đồ cần có ít nhất 1 Goal (G) hoặc Food (.)!", STATUS_COLORS["ERROR"])
             self.status = "ERROR"
@@ -718,7 +768,7 @@ class GameController:
             if self._stop_event.is_set():
                 return
 
-            while not self._pause_event.is_set():
+            while not self._is_web and not self._pause_event.is_set():
                 if self._stop_event.is_set():
                     return
                 if self.is_stepping and self._step_trigger.is_set():
@@ -817,7 +867,7 @@ class GameController:
                 state.status = "PLAYING"
 
             delay = max(0.04, 0.4 / max(0.1, self.speed))
-            time.sleep(delay)
+            yield delay
 
         if buoc >= max_steps and self.status == "RUNNING":
             self.status = "PAUSED"

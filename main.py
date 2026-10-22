@@ -1,6 +1,8 @@
 import sys
 import time
+import asyncio
 import argparse
+import pygame
 from collections import deque
 
 from src.utils.map_loader import load_map
@@ -135,7 +137,7 @@ def in_ban_do(game_map, pacman_pos, ghost_positions, target_pos, remaining_food=
         print("  " + dong)
 
 
-def main():
+def cli_main():
     print("=========================================")
     print("   DO AN PACMAN AI SEARCH - NHOM 07      ")
     print("=========================================")
@@ -644,7 +646,14 @@ def run_cli(map_path, algo_name, depth=2, mode="match"):
         print(f"[LOI] Thuat toan khong hop le: {algo_name}")
 
 
-if __name__ == "__main__":
+async def main():
+    """Ham khoi chay chinh ho tro ca Pygbag WebAssembly (trinh duyet) va Desktop CLI/GUI"""
+    if sys.platform == "emscripten":
+        from ui.main import PacmanVintageUI
+        app = PacmanVintageUI()
+        await app.run_async()
+        return
+
     parser = argparse.ArgumentParser(description="Pacman AI Search - Nhom 07")
     parser.add_argument("--ui", action="store_true", help="Chay giao dien do hoa Vintage Arcade (Pygame)")
     parser.add_argument("--map", type=str, default=None, help="Duong dan toi file ban do .txt (vd: maps/test_map.txt)")
@@ -660,7 +669,11 @@ if __name__ == "__main__":
     elif args.map and args.algo:
         run_cli(args.map, args.algo, args.depth, args.mode)
     else:
-        main()
+        cli_main()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
 
 # ========================================================
 # CÁCH CHẠY CHƯƠNG TRÌNH:

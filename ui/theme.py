@@ -3,6 +3,8 @@ Bảng màu, typography và hằng số phong cách Vintage Arcade / Retro Pixel
 Dự án: Pacman AI Search - Nhóm 07
 """
 
+import os
+import sys
 import pygame
 
 # ==============================================================================
@@ -77,23 +79,28 @@ BTN_ACTION_PAUSE_H = (215, 155, 30)
 
 
 # ==============================================================================
-# QUẢN LÝ FONT CHỮ RETRO (TYPOGRAPHY)
+# QUẢN LÝ FONT CHỮ RETRO (TYPOGRAPHY - HỖ TRỢ CẢ DESKTOP & WEBASSEMBLY PYGBAG)
 # ==============================================================================
 _fonts = {}
 
 def init_fonts():
-    """Khởi tạo font chữ hệ thống monospaced retro: Consolas / Courier New / Fallback"""
+    """Khởi tạo font chữ monospaced retro hỗ trợ tiếng Việt trên cả Desktop và Web (Pygbag)"""
     if not pygame.font.get_init():
         pygame.font.init()
 
-    # Thử các font retro monospaced sắc nét phổ biến trên Windows
+    ui_dir = os.path.dirname(os.path.abspath(__file__))
+    bundled_reg = os.path.join(ui_dir, "fonts", "consola.ttf")
+    bundled_bold = os.path.join(ui_dir, "fonts", "consolab.ttf")
+    has_bundled = os.path.exists(bundled_reg)
+
     candidate_fonts = ["consolas", "lucidaconsole", "couriernew", "dejavusansmono"]
     chosen_font_name = None
 
-    for name in candidate_fonts:
-        if pygame.font.match_font(name):
-            chosen_font_name = name
-            break
+    if sys.platform != "emscripten":
+        for name in candidate_fonts:
+            if pygame.font.match_font(name):
+                chosen_font_name = name
+                break
 
     sizes = {
         "title": 26,
@@ -106,9 +113,13 @@ def init_fonts():
     }
 
     for key, size in sizes.items():
+        is_bold = key in ["title", "header", "badge"]
         try:
-            if chosen_font_name:
-                _fonts[key] = pygame.font.SysFont(chosen_font_name, size, bold=(key in ["title", "header", "badge"]))
+            if has_bundled:
+                ttf_path = bundled_bold if (is_bold and os.path.exists(bundled_bold)) else bundled_reg
+                _fonts[key] = pygame.font.Font(ttf_path, size)
+            elif chosen_font_name:
+                _fonts[key] = pygame.font.SysFont(chosen_font_name, size, bold=is_bold)
             else:
                 _fonts[key] = pygame.font.Font(None, size)
         except Exception:
