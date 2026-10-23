@@ -6,7 +6,7 @@ Loading p1_nhom07 from p1_nhom07.apk
     Template Version : 0.9.3
     Python  : 3.12
     CDN URL : https://pygame-web.github.io/cdn/0.9.3/
-    Screen  : 1260x780
+    Screen  : 1280x720
     Title   : p1_nhom07
     Folder  : p1_nhom07
     Authors : pgw
@@ -23,7 +23,7 @@ from pathlib import Path
 # do not rename
 async def custom_site():
     import embed
-    platform.document.body.style.background = "#11131f"
+    platform.document.body.style.background = "#7f7f7f"
 
     platform.window.transfer.hidden = true
     platform.window.canvas.style.visibility = "visible"
@@ -63,7 +63,7 @@ async def custom_site():
     # before a gesture is recorded ( touch or click )
 
     # test/wait user media interaction
-    if False and not platform.window.MM.UME:
+    if not platform.window.MM.UME:
 
         # now that apk is mounted we have access to font cache
         # but we need to fill __file__ that is not yet set
@@ -149,16 +149,16 @@ config = {
     user_canvas : 0,
     user_canvas_managed : 0,
     gui_divider : 2,
-    ume_block : 0,
+    ume_block : 1,
     can_close : 0,
     archive : "p1_nhom07",
     gui_debug : 2,
     cdn : "https://pygame-web.github.io/cdn/0.9.3/",
-    autorun : 1,
+    autorun : 0,
     PYBUILD : "3.12",
     fb_ar   :  1.77,
-    fb_width : "1260",
-    fb_height : "780"
+    fb_width : "1280",
+    fb_height : "720"
 }
 
 function show_infobox() {
@@ -307,8 +307,8 @@ height="1px"
     </canvas>
 
     <canvas class="emscripten" id="canvas3d"
-width="1260px"
-height="780px"
+width="1280px"
+height="720px"
     oncontextmenu="event.preventDefault()" tabindex=1 hidden>
     </canvas>
 
