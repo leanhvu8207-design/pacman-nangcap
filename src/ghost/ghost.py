@@ -59,7 +59,9 @@ class Ghost:
             if self.get_next_position(act, game_map) not in other_ghosts
         ]
         # Nếu bị quây kín không có lối đi an toàn nào thì dùng valid_actions
-        candidate_actions = safe_actions if safe_actions else valid_actions
+        if not safe_actions:
+            return None
+        candidate_actions = safe_actions
 
         # 1. Tìm đường đi ngắn nhất bằng BFS tới Pacman (coi các Ghost khác là vật cản tạm thời)
         queue = deque([(self.position, None)])
